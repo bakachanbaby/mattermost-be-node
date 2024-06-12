@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 const axios = require('axios');
-const Category = require('../models/category.modal');
+const CategoryModal = require('../models/category.modal');
 const UserModel = require('../models/user.model');
 const RequestModal = require('../models/request.model');
 const DIALOG_URL = `${process.env.URL_MATTERMOST}/api/v4/actions/dialogs/open`;
@@ -10,6 +10,7 @@ const MESSAGE_URL = `${process.env.URL_MATTERMOST}/api/v4/posts`;
 const MATTERMOST_ACCESS = process.env.MATTERMOST_ACCESS_TOKEN;
 const NGROK_URL = process.env.URL_NGROK;
 const POST_URL = `${process.env.URL_MATTERMOST}/api/v4/posts`;
+const USER_URL = `${process.env.URL_MATTERMOST}/api/v4/users/username`;
 
 const handleOpenDialogRequest = async (req, res) => {
     const response_url = req.body.response_url;
@@ -52,7 +53,7 @@ const handleOpenDialogRequest = async (req, res) => {
         return res.status(200).send();
     }
 
-    let lstCategory = await Category.find();
+    let lstCategory = await CategoryModal.find();
     lstCategory = lstCategory.map((item) => {
         return {
             text: item.description,
@@ -177,29 +178,132 @@ const handleAddRequest = async (req, res) => {
                 const lstRequest = await RequestModal.find();
                 console.log(lstRequest);
 
-                const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
-
-                const tableRows = lstRequest.map((request, index) => {
-                    const date = new Date(request.createdDate);
-                    const formattedDate = date.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.category.description} | ${request.status} |`;
-                });
-                const table = [tableTitle, tableHeader, ...tableRows].join('\n');
-
-                const messageData = {
-                    channel_id: channel_id,
-                    message: `Người dùng **${user.username}** đã thêm kiến nghị mới với mã **${e.data.code}**`,
-                    props: {
-                        attachments: [
-                            {
-                                text: table,
-                            }
-                        ]
-                    }
-                };
-
+                // Thông báo trên kênh chung với @admin
                 try {
+                    // Lấy ra user là admin với role là admin và channel_id là channel_id
+                    const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
+                    console.log('Admin', admin);
+
+                    // Tạo một tin nhắn
+                    const message = `@${admin.username} Đã nhận được kiến nghị mới, cần chờ phê duyệt`;
+
+                    // Gửi tin nhắn
+                    await axios.post(MESSAGE_URL, {
+                        channel_id: channel_id,
+                        message: message
+                    }, {
+                        headers: {
+                            'Authorization': 'Bearer ' + MATTERMOST_ACCESS,
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                }
+
+                // Thông báo trực tiếp cho admin
+                try {
+                    const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
+
+                    const getUserId = await axios.get(`${USER_URL}/bot_danvu`, {
+                        headers: {
+                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    const botId = getUserId.data.id;
+
+                    const directMessage = await axios.post(`${process.env.URL_MATTERMOST}/api/v4/channels/direct`, [
+                        botId,
+                        admin.userId
+                    ], {
+                        headers: {
+                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const channelId = directMessage.data.id;
+
+                    const message = `Đã nhận được kiến nghị mới, mã kiến nghị: **${e.data.code}**`;
+                    const formattedDate = new Date(e.data.createdDate).toLocaleDateString('vi-VN');
+
+                    await axios.post(MESSAGE_URL, {
+                        channel_id: channelId,
+                        message: message,
+                        props: {
+                            attachments: [
+                                {
+                                    text: `#### Thông tin kiến nghị mới`,
+                                    fields: [
+                                        { title: "Mã kiến nghị", value: e.data.code, short: true },
+                                        { title: "Tiêu đề", value: e.data.title, short: true },
+                                        { title: "Nội dung", value: e.data.content, short: true },
+                                        { title: "Ngày tạo", value: formattedDate, short: true },
+                                        { title: "Lĩnh vực", value: e.data.category.description, short: true },
+                                        { title: "Trạng thái", value: e.data.status, short: true },
+                                    ],
+                                    actions: [
+                                        {
+                                            name: "Phê duyệt",
+                                            type: "button",
+                                            integration: {
+                                                url: `${NGROK_URL}/api/request-mattermost/approve-request/${e.data._id}`,
+                                                context: {
+                                                    action: "approve"
+                                                }
+                                            },
+                                            style: "primary"
+                                        },
+                                        {
+                                            name: "Bình luận",
+                                            type: "button",
+                                            integration: {
+                                                url: `${NGROK_URL}/api/request-mattermost/comment-request/${e.data._id}`,
+                                                context: {
+                                                    action: "comment"
+                                                }
+                                            },
+                                            style: "danger"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                }
+
+                // Hiển thị danh sách kiến nghị mới
+                try {
+                    const tableTitle = "## Danh sách kiến nghị";
+                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+
+                    const tableRows = lstRequest.map((request, index) => {
+                        const date = new Date(request.createdDate);
+                        const formattedDate = date.toLocaleDateString('vi-VN');
+                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.category.description} | ${request.status} |`;
+                    });
+                    const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+
+                    const messageData = {
+                        channel_id: channel_id,
+                        message: `Người dùng **${user.username}** đã thêm kiến nghị mới với mã **${e.data.code}**`,
+                        props: {
+                            attachments: [
+                                {
+                                    text: table,
+                                }
+                            ]
+                        }
+                    };
                     const response = await axios.post(MESSAGE_URL, messageData, {
                         headers: {
                             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
@@ -354,7 +458,7 @@ const handleOpenEditRequest = async (req, res) => {
         return res.status(200).send();
     }
 
-    let lstCategory = await Category.find();
+    let lstCategory = await CategoryModal.find();
     lstCategory = lstCategory.map((item) => {
         return {
             text: item.description,
@@ -692,6 +796,73 @@ const handleConfirmDeleteRequest = async (req, res) => {
     }
 }
 
+const handleApproveRequest = async (req, res) => {
+    const { post_id, user_name } = req.body;
+    console.log(req.body);
+    const urlAddRequest = `${process.env.URL_NGROK}/api/request`;
+    try {
+
+        const request = await RequestModal.findOne({ _id: req.params.id });
+
+        const updateReq = {
+            status: 'Đã phê duyệt',
+            categoryId: request.category._id
+        }
+
+        const newRequest = await axios.put(`${urlAddRequest}/${req.params.id}`, updateReq)
+
+        await axios.delete(`${POST_URL}/${post_id}`, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`
+            }
+        });
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        const channel_id = user.channelId;
+
+        // Hiển thị danh sách kiến nghị mới
+
+        const lstRequest = await RequestModal.find();
+
+        const tableTitle = "## Danh sách kiến nghị";
+        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+
+        const tableRows = lstRequest.map((request, index) => {
+            const date = new Date(request.createdDate);
+            const formattedDate = date.toLocaleDateString('vi-VN');
+            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.category.description} | ${request.status} |`;
+        });
+        const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `Người dùng **${user.username}** đã phê duyệt kiến nghị với mã **${newRequest.data.code}**`,
+            props: {
+                attachments: [
+                    {
+                        text: table,
+                    }
+                ]
+            }
+        };
+        const response = await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log('Message sent:', response.data);
+
+        res.status(200).send('Cancellation message sent');
+
+    }
+    catch (error) {
+        res.status(500).send('Error handling cancellation');
+
+        console.error('Error sending message:', error);
+    }
+}
+
 module.exports = {
     handleOpenDialogRequest,
     handleAddRequest,
@@ -702,4 +873,5 @@ module.exports = {
     handleDeleteRequest,
     handleCancelDeleteRequest,
     handleConfirmDeleteRequest,
+    handleApproveRequest,
 };

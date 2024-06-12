@@ -10,6 +10,7 @@ const {
     handleDeleteRequest,
     handleCancelDeleteRequest,
     handleConfirmDeleteRequest,
+    handleApproveRequest,
 } = require('../controllers/request.mattermost.controller');
 
 router.post('/open-dialog-request', handleOpenDialogRequest);
@@ -21,5 +22,6 @@ router.post('/edit-request/:id', handleEditRequest);
 router.post('/delete-request', handleDeleteRequest);
 router.post('/cancel-delete-request', handleCancelDeleteRequest);
 router.post('/confirm-delete-request/:id', handleConfirmDeleteRequest);
+router.post('/approve-request/:id', handleApproveRequest);
 
 module.exports = router;
