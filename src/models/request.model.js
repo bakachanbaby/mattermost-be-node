@@ -7,7 +7,7 @@ const RequestSchema = new Schema({
     title: String,
     content: String,
     status: {
-        type: REQUEST_STATUS,
+        type: String,
         default: REQUEST_STATUS.IDLE,
     },
     category: Object,

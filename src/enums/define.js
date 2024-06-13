@@ -1,4 +1,4 @@
-export const REQUEST_STATUS = {
+const REQUEST_STATUS = {
     //Vừa khởi tạo
     IDLE: 'IDLE',
     //Đã gửi request
@@ -11,4 +11,8 @@ export const REQUEST_STATUS = {
     APPROVED: 'APPROVED',
     //Đã từ chối
     REJECTED: 'REJECTED',
+};
+
+module.exports = {
+    REQUEST_STATUS,
 };
