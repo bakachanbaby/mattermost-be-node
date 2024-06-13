@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { REQUEST_STATUS } = require('../enums/define');
 const { Schema } = mongoose;
 
 const RequestSchema = new Schema({
@@ -6,8 +7,8 @@ const RequestSchema = new Schema({
     title: String,
     content: String,
     status: {
-        type: String,
-        default: "Đã tạo",
+        type: REQUEST_STATUS,
+        default: REQUEST_STATUS.IDLE,
     },
     category: Object,
     result: {
