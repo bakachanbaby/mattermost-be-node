@@ -12,6 +12,7 @@ const handleOpenDialogRequest = async (req, res) => {
     const response_url = req.body.response_url;
     const trigger_id = req.body.trigger_id;
     const channel_id = req.body.channel_id;
+    let post_id = req.body.post_id || '';
     // const post_id = req.body.post_id;
 
     // Lấy ra người dùng có id là user_id
@@ -109,7 +110,7 @@ const handleOpenDialogRequest = async (req, res) => {
                 }
             ],
             notify_on_cancel: true,
-            state: JSON.stringify({ response_url, channel_id, trigger_id })
+            state: JSON.stringify({ response_url, channel_id, trigger_id, post_id })
         }
     };
 
@@ -134,7 +135,7 @@ const handleOpenDialogRequest = async (req, res) => {
 const handleAddRequest = async (req, res) => {
     const state = JSON.parse(req.body.state);
     const channel_id = state.channel_id;
-    // const post_id = state.post_id;
+    const post_id = state.post_id;
     const urlAddRequest = `${process.env.URL_NGROK}/api/request`;
     console.log(state);
     console.log(req.body);
@@ -168,6 +169,15 @@ const handleAddRequest = async (req, res) => {
                 lstRequest = lstRequest.filter((request) => request.status === 'Đã tạo');
 
                 console.log(lstRequest);
+
+                if(post_id) {
+                    await axios.delete(`${POST_URL}/${post_id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                }
 
                 // await axios.delete(`${POST_URL}/${post_id}`, {
                 //     headers: {
@@ -407,6 +417,22 @@ const handleViewRequest = async (req, res) => {
     const request = await RequestModal.findOne({ code: text });
     console.log(request);
 
+    if(!request) {
+        const messageData = {
+            channel_id: channel_id,
+            message: `Không tìm thấy kiến nghị với mã **${text}**`,
+        };
+
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.status(200).send();
+    }
+
     const formattedDate = new Date(request.createdDate).toLocaleDateString('vi-VN');
 
     const fields = [
@@ -623,181 +649,171 @@ const handleSendListRequest = async (req, res) => {
 };
 
 const handleOpenEditRequest = async (req, res) => {
-    // const response_url = req.body.response_url;
-    // const trigger_id = req.body.trigger_id;
-    // const channel_id = req.body.channel_id;
+    const response_url = req.body.response_url;
+    const trigger_id = req.body.trigger_id;
+    const channel_id = req.body.channel_id;
     console.log('Open edit request', req.body);
-    // let text = req.body.text;
+    let text = req.body.text || req.params.code;
+    let post_id = req.body.post_id || '';
+    // Lấy ra kiến nghị có code là text
+    const request = await RequestModal.findOne({ code: text });
 
-    // // Lấy ra kiến nghị có code là text
-    // const request = await RequestModal.findOne({ code: text });
+    // Lấy ra người dùng có id là user_id
+    const user = await UserModel.findOne({ userId: req.body.user_id });
+    console.log(req.body);
+    if (!user) {
+        // return res.status(404).send('User not found');
+        const messageData = {
+            channel_id: channel_id,
+            message: `Người dùng **${req.body.user_name}** không có quyền sửa kiến nghị`,
+        };
 
-    // // Lấy ra người dùng có id là user_id
-    // const user = await UserModel.findOne({ userId: req.body.user_id });
-    // console.log(req.body);
-    // if (!user) {
-    //     // return res.status(404).send('User not found');
-    //     const messageData = {
-    //         channel_id: channel_id,
-    //         message: `Người dùng **${req.body.user_name}** không có quyền sửa kiến nghị`,
-    //     };
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //     await axios.post(MESSAGE_URL, messageData, {
-    //         headers: {
-    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
+        return res.status(200).send();
+    }
 
-    //     return res.status(200).send();
-    // }
+    // Kiểm tra xem người dùng có quyền sửa kiến nghị không
+    if (user.role !== 'nv') {
+        const messageData = {
+            channel_id: channel_id,
+            message: `Người dùng **${user.username}** không có quyền sửa kiến nghị`,
+        };
 
-    // // Kiểm tra xem người dùng có quyền sửa kiến nghị không
-    // if (user.role !== 'nv') {
-    //     const messageData = {
-    //         channel_id: channel_id,
-    //         message: `Người dùng **${user.username}** không có quyền sửa kiến nghị`,
-    //     };
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //     await axios.post(MESSAGE_URL, messageData, {
-    //         headers: {
-    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
+        return res.status(200).send();
+    }
 
-    //     return res.status(200).send();
-    // }
+    if (request && request.status === 'Đã phê duyệt') {
+        const messageData = {
+            channel_id: channel_id,
+            message: `Kiến nghị mã **${request.code}** đã được phê duyệt, không thể sửa`,
+        };
 
-    // if (request && request.status === 'Đã phê duyệt') {
-    //     const messageData = {
-    //         channel_id: channel_id,
-    //         message: `Kiến nghị mã **${request.code}** đã được phê duyệt, không thể sửa`,
-    //     };
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //     await axios.post(MESSAGE_URL, messageData, {
-    //         headers: {
-    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
+        return res.status(200).send();
+    }
 
-    //     return res.status(200).send();
-    // }
+    if (!request) {
+        const messageData = {
+            channel_id: channel_id,
+            message: `Không tìm thấy kiến nghị với mã **${text}**`,
+        };
 
-    // if (!request) {
-    //     const messageData = {
-    //         channel_id: channel_id,
-    //         message: `Không tìm thấy kiến nghị với mã **${text}**`,
-    //     };
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //     await axios.post(MESSAGE_URL, messageData, {
-    //         headers: {
-    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
+        return res.status(200).send();
+    }
 
-    //     return res.status(200).send();
-    // }
+    let lstCategory = await CategoryModal.find();
+    lstCategory = lstCategory.map((item) => {
+        return {
+            text: item.description,
+            value: item._id
+        };
+    });
+    console.log(req.body);
+    console.log(lstCategory);
 
-    // let lstCategory = await CategoryModal.find();
-    // lstCategory = lstCategory.map((item) => {
-    //     return {
-    //         text: item.description,
-    //         value: item._id
-    //     };
-    // });
-    // console.log(req.body);
-    // console.log(lstCategory);
+    console.log(response_url, trigger_id, channel_id);
 
-    // console.log(response_url, trigger_id, channel_id);
+    console.log(request);
+    const dialog = {
+        trigger_id: trigger_id,
+        url: `${NGROK_URL}/api/request-mattermost/edit-request/${request._id}`,
+        dialog: {
+            callback_id: 'somecallbackid',
+            title: 'Sửa kiến nghị',
+            "elements": [
+                {
+                    "display_name": "Tiêu đề",
+                    "name": "title",
+                    "type": "text",
+                    "subtype": "",
+                    "default": request.title,
+                    "placeholder": "Vui lòng nhập tiêu đề",
+                    "help_text": "",
+                    "optional": false,
+                    "requiredText": "Vui lòng nhập tiêu đề"
+                },
+                {
+                    "display_name": "Nội dung",
+                    "name": "content",
+                    "type": "textarea",
+                    "subtype": "",
+                    "default": request.content,
+                    "placeholder": "Vui lòng nhập nội dung",
+                    "help_text": "",
+                    "optional": false
+                },
+                {
+                    "display_name": "Ngày nhận",
+                    "name": "receivedDate",
+                    "type": "text",
+                    "subtype": "",
+                    "default": request.receivedDate,
+                    "placeholder": "Vui lòng nhập ngày nhận (ngày/tháng/năm)",
+                    "help_text": "",
+                    "optional": false,
+                },
+                {
+                    "display_name": "Danh mục",
+                    "name": "category",
+                    "type": "select",
+                    "placeholder": "Vui lòng chọn danh mục",
+                    "default": request.category._id,
+                    "options": lstCategory
+                }
+            ],
+            notify_on_cancel: true,
+            state: JSON.stringify({ response_url, channel_id, trigger_id, post_id })
+        }
+    };
 
-    // console.log(request);
-    // const dialog = {
-    //     trigger_id: trigger_id,
-    //     url: `${NGROK_URL}/api/request-mattermost/edit-request/${request._id}`,
-    //     dialog: {
-    //         callback_id: 'somecallbackid',
-    //         title: 'Sửa kiến nghị',
-    //         "elements": [
-    //             {
-    //                 "display_name": "Tiêu đề",
-    //                 "name": "title",
-    //                 "type": "text",
-    //                 "subtype": "",
-    //                 "default": request.title,
-    //                 "placeholder": "Vui lòng nhập tiêu đề",
-    //                 "help_text": "",
-    //                 "optional": false,
-    //                 "requiredText": "Vui lòng nhập tiêu đề"
-    //             },
-    //             {
-    //                 "display_name": "Nội dung",
-    //                 "name": "content",
-    //                 "type": "textarea",
-    //                 "subtype": "",
-    //                 "default": request.content,
-    //                 "placeholder": "Vui lòng nhập nội dung",
-    //                 "help_text": "",
-    //                 "optional": false
-    //             },
-    //             {
-    //                 "display_name": "Độ ưu tiên",
-    //                 "name": "priority",
-    //                 "type": "select",
-    //                 "placeholder": "Vui lòng chọn độ ưu tiên",
-    //                 "default": request.priority.toString(),
-    //                 "options": [
-    //                     {
-    //                         "text": "1",
-    //                         "value": "1"
-    //                     },
-    //                     {
-    //                         "text": "2",
-    //                         "value": "2"
-    //                     },
-    //                     {
-    //                         "text": "3",
-    //                         "value": "3"
-    //                     }
-    //                 ]
-    //             },
-    //             {
-    //                 "display_name": "Danh mục",
-    //                 "name": "category",
-    //                 "type": "select",
-    //                 "placeholder": "Vui lòng chọn danh mục",
-    //                 "default": request.category._id,
-    //                 "options": lstCategory
-    //             }
-    //         ],
-    //         notify_on_cancel: true,
-    //         state: JSON.stringify({ response_url, channel_id, trigger_id })
-    //     }
-    // };
+    console.log(dialog);
 
-    // console.log(dialog);
-
-    // await axios.post(DIALOG_URL, dialog, {
-    //     headers: {
-    //         'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-    //         'Content-Type': 'application/json',
-    //     }
-    // })
-    //     .then((e) => {
-    //         res.status(200).send();
-    //         console.log(e.data);
-    //     })
-    //     .catch(err => {
-    //         console.error(err);
-    //         res.status(500).send('Internal Server Error');
-    //     });
+    await axios.post(DIALOG_URL, dialog, {
+        headers: {
+            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+            'Content-Type': 'application/json',
+        }
+    })
+        .then((e) => {
+            res.status(200).send();
+            console.log(e.data);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        });
 };
 
 const handleEditRequest = async (req, res) => {
     const state = JSON.parse(req.body.state);
     const channel_id = state.channel_id;
+    const post_id = state.post_id;
     const urlAddRequest = `${process.env.URL_NGROK}/api/request`;
     console.log('Edit request');
     console.log(state);
@@ -808,13 +824,13 @@ const handleEditRequest = async (req, res) => {
         const reqRequest = {
             title: req.body.submission.title,
             content: req.body.submission.content,
-            priority: req.body.submission.priority,
+            receivedDate: req.body.submission.receivedDate,
             categoryId: req.body.submission.category,
         }
 
         console.log('Edit request ', reqRequest);
 
-        if (!reqRequest.title || !reqRequest.content || !reqRequest.priority || !reqRequest.categoryId) {
+        if (!reqRequest.title || !reqRequest.content || !reqRequest.receivedDate || !reqRequest.categoryId) {
             return res.status(200).send();
         }
 
@@ -834,118 +850,131 @@ const handleEditRequest = async (req, res) => {
                 console.log(lstRequest);
 
 
-                // Thông báo trên kênh chung với @admin
-                try {
-                    // Lấy ra user là admin với role là admin và channel_id là channel_id
-                    const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
-                    console.log('Admin', admin);
-
-                    // Tạo một tin nhắn
-                    const message = `@${admin.username} Đã nhận được kiến nghị vừa sửa mới, cần chờ phê duyệt`;
-
-                    // Gửi tin nhắn
-                    await axios.post(MESSAGE_URL, {
-                        channel_id: channel_id,
-                        message: message
-                    }, {
+                if (post_id) {
+                    await axios.delete(`${POST_URL}/${post_id}`, {
                         headers: {
-                            'Authorization': 'Bearer ' + MATTERMOST_ACCESS,
+                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`
                         }
                     });
 
-                } catch (error) {
-                    console.error('Error sending message:', error);
                 }
 
-                // Thông báo trực tiếp cho admin
-                try {
-                    const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
+                // // Thông báo trên kênh chung với @admin
+                // try {
+                //     // Lấy ra user là admin với role là admin và channel_id là channel_id
+                //     const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
+                //     console.log('Admin', admin);
 
-                    const getUserId = await axios.get(`${USER_URL}/bot_danvu`, {
-                        headers: {
-                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    const botId = getUserId.data.id;
+                //     // Tạo một tin nhắn
+                //     const message = `@${admin.username} Đã nhận được kiến nghị vừa sửa mới, cần chờ phê duyệt`;
 
-                    const directMessage = await axios.post(DIRECT_URL, [
-                        botId,
-                        admin.userId
-                    ], {
-                        headers: {
-                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                //     // Gửi tin nhắn
+                //     await axios.post(MESSAGE_URL, {
+                //         channel_id: channel_id,
+                //         message: message
+                //     }, {
+                //         headers: {
+                //             'Authorization': 'Bearer ' + MATTERMOST_ACCESS,
+                //         }
+                //     });
 
-                    const channelId = directMessage.data.id;
+                // } catch (error) {
+                //     console.error('Error sending message:', error);
+                // }
 
-                    const message = `Đã có kiến nghị mới được sửa, mã kiến nghị: **${e.data.code}**`;
-                    const formattedDate = new Date(e.data.createdDate).toLocaleDateString('vi-VN');
+                // // Thông báo trực tiếp cho admin
+                // try {
+                //     const admin = await UserModel.findOne({ role: 'admin', channel_id: channel_id });
 
-                    await axios.post(MESSAGE_URL, {
-                        channel_id: channelId,
-                        message: message,
-                        props: {
-                            attachments: [
-                                {
-                                    text: `#### Thông tin kiến nghị mới được sửa`,
-                                    fields: [
-                                        { title: "Mã kiến nghị", value: e.data.code, short: true },
-                                        { title: "Tiêu đề", value: e.data.title, short: true },
-                                        { title: "Nội dung", value: e.data.content, short: true },
-                                        { title: "Ngày tạo", value: formattedDate, short: true },
-                                        { title: "Lĩnh vực", value: e.data.category.description, short: true },
-                                        { title: "Trạng thái", value: e.data.status, short: true },
-                                    ],
-                                    actions: [
-                                        {
-                                            name: "Phê duyệt",
-                                            type: "button",
-                                            integration: {
-                                                url: `${NGROK_URL}/api/request-mattermost/approve-request/${e.data._id}`,
-                                                context: {
-                                                    action: "approve"
-                                                }
-                                            },
-                                            style: "primary"
-                                        },
-                                        {
-                                            name: "Bình luận",
-                                            type: "button",
-                                            integration: {
-                                                url: `${NGROK_URL}/api/request-mattermost/open-comment-request/${e.data._id}`,
-                                                context: {
-                                                    action: "comment"
-                                                }
-                                            },
-                                            style: "danger"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                //     const getUserId = await axios.get(`${USER_URL}/bot_danvu`, {
+                //         headers: {
+                //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                //             'Content-Type': 'application/json'
+                //         }
+                //     })
+                //     const botId = getUserId.data.id;
 
-                } catch (error) {
-                    console.error('Error sending message:', error);
-                }
+                //     const directMessage = await axios.post(DIRECT_URL, [
+                //         botId,
+                //         admin.userId
+                //     ], {
+                //         headers: {
+                //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                //             'Content-Type': 'application/json'
+                //         }
+                //     });
+
+                //     const channelId = directMessage.data.id;
+
+                //     const message = `Đã có kiến nghị mới được sửa, mã kiến nghị: **${e.data.code}**`;
+                //     const formattedDate = new Date(e.data.createdDate).toLocaleDateString('vi-VN');
+                //     const formattedReceivedDate = new Date(e.data.receivedDate).toLocaleDateString('vi-VN');
+
+                //     await axios.post(MESSAGE_URL, {
+                //         channel_id: channelId,
+                //         message: message,
+                //         props: {
+                //             attachments: [
+                //                 {
+                //                     text: `#### Thông tin kiến nghị mới được sửa`,
+                //                     fields: [
+                //                         { title: "Mã kiến nghị", value: e.data.code, short: true },
+                //                         { title: "Tiêu đề", value: e.data.title, short: true },
+                //                         { title: "Nội dung", value: e.data.content, short: true },
+                //                         { title: "Ngày tạo", value: formattedDate, short: true },
+                //                         { title: "Ngày nhận", value: formattedReceivedDate, short: true },
+                //                         { title: "Lĩnh vực", value: e.data.category.description, short: true },
+                //                         { title: "Trạng thái", value: e.data.status, short: true },
+                //                     ],
+                //                     actions: [
+                //                         {
+                //                             name: "Phê duyệt",
+                //                             type: "button",
+                //                             integration: {
+                //                                 url: `${NGROK_URL}/api/request-mattermost/approve-request/${e.data._id}`,
+                //                                 context: {
+                //                                     action: "approve"
+                //                                 }
+                //                             },
+                //                             style: "primary"
+                //                         },
+                //                         {
+                //                             name: "Bình luận",
+                //                             type: "button",
+                //                             integration: {
+                //                                 url: `${NGROK_URL}/api/request-mattermost/open-comment-request/${e.data._id}`,
+                //                                 context: {
+                //                                     action: "comment"
+                //                                 }
+                //                             },
+                //                             style: "danger"
+                //                         }
+                //                     ]
+                //                 }
+                //             ]
+                //         }
+                //     }, {
+                //         headers: {
+                //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                //             'Content-Type': 'application/json'
+                //         }
+                //     });
+
+                // } catch (error) {
+                //     console.error('Error sending message:', error);
+                // }
 
                 // Hiển thị danh sách kiến nghị 
                 try {
                     const tableTitle = "## Danh sách kiến nghị";
-                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                     const tableRows = lstRequest.map((request, index) => {
                         const date = new Date(request.createdDate);
+                        const receivedDate = new Date(request.receivedDate);
                         const formattedDate = date.toLocaleDateString('vi-VN');
-                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.category.description} | ${request.status} |`;
+                        const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
+                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${formattedReceivedDate} | ${request.category.description} | ${request.status} |`;
                     });
                     const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -956,6 +985,19 @@ const handleEditRequest = async (req, res) => {
                             attachments: [
                                 {
                                     text: table,
+                                    actions: [
+                                        {
+                                            name: "Thêm kiến nghị mới",
+                                            type: "button",
+                                            integration: {
+                                                url: `${NGROK_URL}/api/request-mattermost/open-dialog-request`,
+                                                context: {
+                                                    action: "view"
+                                                }
+                                            },
+                                            style: "primary"
+                                        }
+                                    ],
                                 }
                             ]
                         }
@@ -986,7 +1028,9 @@ const handleEditRequest = async (req, res) => {
 }
 
 const handleDeleteRequest = async (req, res) => {
-    const { channel_id, text } = req.body;
+    const { channel_id } = req.body;
+    let text = req.body.text || req.params.code;
+    let post_id = req.body.post_id || '';
     console.log(req.body);
 
     // Lấy ra kiến nghị có code là text
@@ -1045,8 +1089,18 @@ const handleDeleteRequest = async (req, res) => {
         return res.status(200).send();
     }
 
+    if(post_id) {
+        await axios.delete(`${POST_URL}/${post_id}`, {
+            headers: {
+                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
     try {
         const formattedDate = new Date(request.createdDate).toLocaleDateString('vi-VN');
+        const formattedReceivedDate = new Date(request.receivedDate).toLocaleDateString('vi-VN');
 
         const messageData = {
             channel_id: channel_id,
@@ -1060,6 +1114,7 @@ const handleDeleteRequest = async (req, res) => {
                             { title: "Tiêu đề", value: request.title, short: true },
                             { title: "Nội dung", value: request.content, short: true },
                             { title: "Ngày tạo", value: formattedDate, short: true },
+                            { title: "Ngày nhận", value: formattedReceivedDate, short: true },
                             { title: "Lĩnh vực", value: request.category.description, short: true },
                             { title: "Trạng thái", value: request.status, short: true },
                         ],
@@ -1167,6 +1222,19 @@ const handleConfirmDeleteRequest = async (req, res) => {
                         attachments: [
                             {
                                 text: table,
+                                actions: [
+                                    {
+                                        name: "Thêm kiến nghị mới",
+                                        type: "button",
+                                        integration: {
+                                            url: `${NGROK_URL}/api/request-mattermost/open-dialog-request`,
+                                            context: {
+                                                action: "view"
+                                            }
+                                        },
+                                        style: "primary"
+                                    }
+                                ],
                             }
                         ]
                     }
