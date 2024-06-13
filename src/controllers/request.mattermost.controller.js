@@ -429,7 +429,31 @@ const handleViewRequest = async (req, res) => {
             attachments: [
                 {
                     text: "## Thông tin kiến nghị",
-                    fields: fields
+                    fields: fields,
+                    actions: [
+                        {
+                            name: "Sửa kiến nghị",
+                            type: "button",
+                            integration: {
+                                url: `${NGROK_URL}/api/request-mattermost/open-edit-request/${request.code}`,
+                                context: {
+                                    action: "edit"
+                                }
+                            },
+                            style: "primary"
+                        },
+                        {
+                            name: "Xóa kiến nghị",
+                            type: "button",
+                            integration: {
+                                url: `${NGROK_URL}/api/request-mattermost/delete-request/${request.code}`,
+                                context: {
+                                    action: "delete"
+                                }
+                            },
+                            style: "danger"
+                        }
+                    ]
                 }
             ]
         }
@@ -599,175 +623,176 @@ const handleSendListRequest = async (req, res) => {
 };
 
 const handleOpenEditRequest = async (req, res) => {
-    const response_url = req.body.response_url;
-    const trigger_id = req.body.trigger_id;
-    const channel_id = req.body.channel_id;
-    const text = req.body.text;
+    // const response_url = req.body.response_url;
+    // const trigger_id = req.body.trigger_id;
+    // const channel_id = req.body.channel_id;
+    console.log('Open edit request', req.body);
+    // let text = req.body.text;
 
-    // Lấy ra kiến nghị có code là text
-    const request = await RequestModal.findOne({ code: text });
+    // // Lấy ra kiến nghị có code là text
+    // const request = await RequestModal.findOne({ code: text });
 
-    // Lấy ra người dùng có id là user_id
-    const user = await UserModel.findOne({ userId: req.body.user_id });
-    console.log(req.body);
-    if (!user) {
-        // return res.status(404).send('User not found');
-        const messageData = {
-            channel_id: channel_id,
-            message: `Người dùng **${req.body.user_name}** không có quyền sửa kiến nghị`,
-        };
+    // // Lấy ra người dùng có id là user_id
+    // const user = await UserModel.findOne({ userId: req.body.user_id });
+    // console.log(req.body);
+    // if (!user) {
+    //     // return res.status(404).send('User not found');
+    //     const messageData = {
+    //         channel_id: channel_id,
+    //         message: `Người dùng **${req.body.user_name}** không có quyền sửa kiến nghị`,
+    //     };
 
-        await axios.post(MESSAGE_URL, messageData, {
-            headers: {
-                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    //     await axios.post(MESSAGE_URL, messageData, {
+    //         headers: {
+    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
 
-        return res.status(200).send();
-    }
+    //     return res.status(200).send();
+    // }
 
-    // Kiểm tra xem người dùng có quyền sửa kiến nghị không
-    if (user.role !== 'nv') {
-        const messageData = {
-            channel_id: channel_id,
-            message: `Người dùng **${user.username}** không có quyền sửa kiến nghị`,
-        };
+    // // Kiểm tra xem người dùng có quyền sửa kiến nghị không
+    // if (user.role !== 'nv') {
+    //     const messageData = {
+    //         channel_id: channel_id,
+    //         message: `Người dùng **${user.username}** không có quyền sửa kiến nghị`,
+    //     };
 
-        await axios.post(MESSAGE_URL, messageData, {
-            headers: {
-                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    //     await axios.post(MESSAGE_URL, messageData, {
+    //         headers: {
+    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
 
-        return res.status(200).send();
-    }
+    //     return res.status(200).send();
+    // }
 
-    if (request && request.status === 'Đã phê duyệt') {
-        const messageData = {
-            channel_id: channel_id,
-            message: `Kiến nghị mã **${request.code}** đã được phê duyệt, không thể sửa`,
-        };
+    // if (request && request.status === 'Đã phê duyệt') {
+    //     const messageData = {
+    //         channel_id: channel_id,
+    //         message: `Kiến nghị mã **${request.code}** đã được phê duyệt, không thể sửa`,
+    //     };
 
-        await axios.post(MESSAGE_URL, messageData, {
-            headers: {
-                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    //     await axios.post(MESSAGE_URL, messageData, {
+    //         headers: {
+    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
 
-        return res.status(200).send();
-    }
+    //     return res.status(200).send();
+    // }
 
-    if (!request) {
-        const messageData = {
-            channel_id: channel_id,
-            message: `Không tìm thấy kiến nghị với mã **${text}**`,
-        };
+    // if (!request) {
+    //     const messageData = {
+    //         channel_id: channel_id,
+    //         message: `Không tìm thấy kiến nghị với mã **${text}**`,
+    //     };
 
-        await axios.post(MESSAGE_URL, messageData, {
-            headers: {
-                'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    //     await axios.post(MESSAGE_URL, messageData, {
+    //         headers: {
+    //             'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
 
-        return res.status(200).send();
-    }
+    //     return res.status(200).send();
+    // }
 
-    let lstCategory = await CategoryModal.find();
-    lstCategory = lstCategory.map((item) => {
-        return {
-            text: item.description,
-            value: item._id
-        };
-    });
-    console.log(req.body);
-    console.log(lstCategory);
+    // let lstCategory = await CategoryModal.find();
+    // lstCategory = lstCategory.map((item) => {
+    //     return {
+    //         text: item.description,
+    //         value: item._id
+    //     };
+    // });
+    // console.log(req.body);
+    // console.log(lstCategory);
 
-    console.log(response_url, trigger_id, channel_id);
+    // console.log(response_url, trigger_id, channel_id);
 
-    console.log(request);
-    const dialog = {
-        trigger_id: trigger_id,
-        url: `${NGROK_URL}/api/request-mattermost/edit-request/${request._id}`,
-        dialog: {
-            callback_id: 'somecallbackid',
-            title: 'Sửa kiến nghị',
-            "elements": [
-                {
-                    "display_name": "Tiêu đề",
-                    "name": "title",
-                    "type": "text",
-                    "subtype": "",
-                    "default": request.title,
-                    "placeholder": "Vui lòng nhập tiêu đề",
-                    "help_text": "",
-                    "optional": false,
-                    "requiredText": "Vui lòng nhập tiêu đề"
-                },
-                {
-                    "display_name": "Nội dung",
-                    "name": "content",
-                    "type": "textarea",
-                    "subtype": "",
-                    "default": request.content,
-                    "placeholder": "Vui lòng nhập nội dung",
-                    "help_text": "",
-                    "optional": false
-                },
-                {
-                    "display_name": "Độ ưu tiên",
-                    "name": "priority",
-                    "type": "select",
-                    "placeholder": "Vui lòng chọn độ ưu tiên",
-                    "default": request.priority.toString(),
-                    "options": [
-                        {
-                            "text": "1",
-                            "value": "1"
-                        },
-                        {
-                            "text": "2",
-                            "value": "2"
-                        },
-                        {
-                            "text": "3",
-                            "value": "3"
-                        }
-                    ]
-                },
-                {
-                    "display_name": "Danh mục",
-                    "name": "category",
-                    "type": "select",
-                    "placeholder": "Vui lòng chọn danh mục",
-                    "default": request.category._id,
-                    "options": lstCategory
-                }
-            ],
-            notify_on_cancel: true,
-            state: JSON.stringify({ response_url, channel_id, trigger_id })
-        }
-    };
+    // console.log(request);
+    // const dialog = {
+    //     trigger_id: trigger_id,
+    //     url: `${NGROK_URL}/api/request-mattermost/edit-request/${request._id}`,
+    //     dialog: {
+    //         callback_id: 'somecallbackid',
+    //         title: 'Sửa kiến nghị',
+    //         "elements": [
+    //             {
+    //                 "display_name": "Tiêu đề",
+    //                 "name": "title",
+    //                 "type": "text",
+    //                 "subtype": "",
+    //                 "default": request.title,
+    //                 "placeholder": "Vui lòng nhập tiêu đề",
+    //                 "help_text": "",
+    //                 "optional": false,
+    //                 "requiredText": "Vui lòng nhập tiêu đề"
+    //             },
+    //             {
+    //                 "display_name": "Nội dung",
+    //                 "name": "content",
+    //                 "type": "textarea",
+    //                 "subtype": "",
+    //                 "default": request.content,
+    //                 "placeholder": "Vui lòng nhập nội dung",
+    //                 "help_text": "",
+    //                 "optional": false
+    //             },
+    //             {
+    //                 "display_name": "Độ ưu tiên",
+    //                 "name": "priority",
+    //                 "type": "select",
+    //                 "placeholder": "Vui lòng chọn độ ưu tiên",
+    //                 "default": request.priority.toString(),
+    //                 "options": [
+    //                     {
+    //                         "text": "1",
+    //                         "value": "1"
+    //                     },
+    //                     {
+    //                         "text": "2",
+    //                         "value": "2"
+    //                     },
+    //                     {
+    //                         "text": "3",
+    //                         "value": "3"
+    //                     }
+    //                 ]
+    //             },
+    //             {
+    //                 "display_name": "Danh mục",
+    //                 "name": "category",
+    //                 "type": "select",
+    //                 "placeholder": "Vui lòng chọn danh mục",
+    //                 "default": request.category._id,
+    //                 "options": lstCategory
+    //             }
+    //         ],
+    //         notify_on_cancel: true,
+    //         state: JSON.stringify({ response_url, channel_id, trigger_id })
+    //     }
+    // };
 
-    console.log(dialog);
+    // console.log(dialog);
 
-    await axios.post(DIALOG_URL, dialog, {
-        headers: {
-            'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
-            'Content-Type': 'application/json',
-        }
-    })
-        .then((e) => {
-            res.status(200).send();
-            console.log(e.data);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send('Internal Server Error');
-        });
+    // await axios.post(DIALOG_URL, dialog, {
+    //     headers: {
+    //         'Authorization': `Bearer ${MATTERMOST_ACCESS}`,
+    //         'Content-Type': 'application/json',
+    //     }
+    // })
+    //     .then((e) => {
+    //         res.status(200).send();
+    //         console.log(e.data);
+    //     })
+    //     .catch(err => {
+    //         console.error(err);
+    //         res.status(500).send('Internal Server Error');
+    //     });
 };
 
 const handleEditRequest = async (req, res) => {
