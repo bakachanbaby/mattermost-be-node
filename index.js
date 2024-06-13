@@ -2,6 +2,7 @@
 const userRoute = require("./src/routes/user.router.js");
 const categoryRoute = require("./src/routes/category.route.js");
 const requestRoute = require("./src/routes/request.router");
+const botRoute = require("./src/routes/bot.router");
 const requestMattermostRoute = require("./src/routes/request.mattermost.route");
 const express = require('express');
 const cors = require('cors');
@@ -29,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/users", userRoute);
 app.use("/api/category", categoryRoute);
 app.use("/api/request", requestRoute);
+app.use("/api/bot", botRoute);
 app.use("/api/request-mattermost", requestMattermostRoute);
 
 mongoose
