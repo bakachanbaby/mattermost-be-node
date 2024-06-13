@@ -136,22 +136,21 @@ const deleteRequest = async (req, res) => {
     }
 };
 
-const updateStatusRequest = async (req, res) => {
+const addCommentRequest = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
-
-        const updatedRequest = await Request.findByIdAndUpdate(
-            id,
-            {
-                status,
-            },
-            { new: true }
-        );
-        if (!updatedRequest) {
+        const { content } = req.body;
+        const request = await Request.findById(id);
+        if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
-        res.json(updatedRequest);
+        // comment trong request là object chứ không phải mảng
+        request.comments = {
+            content,
+            createdDate: new Date(),
+        };
+        await request.save();
+        res.json(request);
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -164,4 +163,5 @@ module.exports = {
     getAllRequests,
     editRequest,
     deleteRequest,
+    addCommentRequest,
 };
