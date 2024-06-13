@@ -18,15 +18,9 @@ const createRequest = async (req, res) => {
 
         const category = await Category.findById(categoryId);
         console.log(category);
-
         const highestRequest = await Request.find().sort({ code: -1 }).limit(1);
-        console.log(highestRequest);
         const highestNumber = highestRequest.length > 0 ? parseInt(highestRequest[0].code.replace('KN', '')) : 0;
-        console.log(highestNumber);
         const newCode = 'KN' + (highestNumber + 1);
-        console.log(newCode);
-
-
         const newRequest = new Request(
             {
                 code: newCode,
