@@ -18,8 +18,17 @@ const createRequest = async (req, res) => {
 
         const category = await Category.findById(categoryId);
         console.log(category);
-        const highestRequest = await Request.find().sort({ code: -1 }).limit(1);
-        const highestNumber = highestRequest.length > 0 ? parseInt(highestRequest[0].code.replace('KN', '')) : 0;
+        console.log('Create request');
+        const requests = await Request.find();
+        requests.sort((a, b) => {
+            const numberA = parseInt(a.code.replace('KN', ''));
+            const numberB = parseInt(b.code.replace('KN', ''));
+            return numberB - numberA;
+        });
+        const highestRequest = requests[0];
+        console.log(highestRequest);
+        const highestNumber = highestRequest ? parseInt(highestRequest.code.replace('KN', '')) : 0;
+        console.log(highestNumber);
         const newCode = 'KN' + (highestNumber + 1);
         const newRequest = new Request(
             {
@@ -115,14 +124,35 @@ const deleteRequest = async (req, res) => {
         if (!deletedRequest) {
             return res.status(404).json({ error: 'Request not found' });
         }
-        res.json({ 
+        res.json({
             message: 'Request deleted successfully',
             request: deletedRequest,
-         });
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+const addCommentRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { content } = req.body;
+        const request = await Request.findById(id);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        // comment trong request là object chứ không phải mảng
+        request.comments = {
+            content,
+            createdDate: new Date(),
+        };
+        await request.save();
+        res.json(request);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 module.exports = {
     createRequest,
@@ -130,4 +160,5 @@ module.exports = {
     getAllRequests,
     editRequest,
     deleteRequest,
+    addCommentRequest,
 };

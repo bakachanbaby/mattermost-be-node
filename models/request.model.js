@@ -19,6 +19,13 @@ const RequestSchema = new Schema({
         type: String,
         default: new Date(),
     },
+    comments: {
+        content: String,
+        createdDate: {
+            type: String,
+            default: new Date(),
+        },
+    },
 });
 
 const RequestModal = mongoose.model('Request', RequestSchema);
