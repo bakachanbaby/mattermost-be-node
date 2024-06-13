@@ -13,6 +13,7 @@ const {
     handleApproveRequest,
     handleOpenCommentRequest,
     handleCommentRequest,
+    handleSendListRequest,
 } = require('../controllers/request.mattermost.controller');
 
 router.post('/open-dialog-request', handleOpenDialogRequest);
@@ -27,5 +28,6 @@ router.post('/confirm-delete-request/:id', handleConfirmDeleteRequest);
 router.post('/approve-request/:id', handleApproveRequest);
 router.post('/open-comment-request/:id', handleOpenCommentRequest);
 router.post('/comment-request/:id', handleCommentRequest);
+router.post('/send-list-request', handleSendListRequest);
 
 module.exports = router;

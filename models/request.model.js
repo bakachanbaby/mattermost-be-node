@@ -5,7 +5,6 @@ const RequestSchema = new Schema({
     code: String,
     title: String,
     content: String,
-    priority: Number,
     status: {
         type: String,
         default: "Đã tạo",
@@ -16,6 +15,10 @@ const RequestSchema = new Schema({
         default: "Đang chờ xử lý",
     },
     createdDate: {
+        type: String,
+        default: new Date(),
+    },
+    receivedDate: {
         type: String,
         default: new Date(),
     },

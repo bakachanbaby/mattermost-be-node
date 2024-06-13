@@ -9,7 +9,7 @@ const createRequest = async (req, res) => {
         const {
             title,
             content,
-            priority,
+            receivedDate,
             status,
             categoryId,
             result,
@@ -35,7 +35,7 @@ const createRequest = async (req, res) => {
                 code: newCode,
                 title,
                 content,
-                priority,
+                receivedDate,
                 status,
                 category,
                 result,
@@ -81,7 +81,7 @@ const editRequest = async (req, res) => {
         const {
             title,
             content,
-            priority,
+            receivedDate,
             status,
             categoryId,
             result,
@@ -97,7 +97,7 @@ const editRequest = async (req, res) => {
             {
                 title,
                 content,
-                priority,
+                receivedDate,
                 status,
                 category,
                 result,
