@@ -1,15 +1,13 @@
 
-const userRoute = require("./routes/user.router.js");
-const categoryRoute = require("./routes/category.route.js");
-const requestRoute = require("./routes/request.router");
-const requestMattermostRoute = require("./routes/request.mattermost.route");
+const userRoute = require("./src/routes/user.router.js");
+const categoryRoute = require("./src/routes/category.route.js");
+const requestRoute = require("./src/routes/request.router");
+const requestMattermostRoute = require("./src/routes/request.mattermost.route");
 const express = require('express');
 const cors = require('cors');
 const mongoose = require("mongoose");
 const cookieParser = require('cookie-parser');
-const axios = require('axios');
 const bodyParser = require('body-parser');
-const Category = require("./models/category.modal.js");
 
 require('dotenv').config();
 mongoose.set('strictQuery', false);

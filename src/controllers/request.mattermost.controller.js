@@ -5,13 +5,8 @@ const axios = require('axios');
 const CategoryModal = require('../models/category.modal');
 const UserModel = require('../models/user.model');
 const RequestModal = require('../models/request.model');
-const DIALOG_URL = `${process.env.URL_MATTERMOST}/api/v4/actions/dialogs/open`;
-const MESSAGE_URL = `${process.env.URL_MATTERMOST}/api/v4/posts`;
-const MATTERMOST_ACCESS = process.env.MATTERMOST_ACCESS_TOKEN;
-const NGROK_URL = process.env.URL_NGROK;
-const POST_URL = `${process.env.URL_MATTERMOST}/api/v4/posts`;
-const USER_URL = `${process.env.URL_MATTERMOST}/api/v4/users/username`;
-const DIRECT_URL = `${process.env.URL_MATTERMOST}/api/v4/channels/direct`;
+const { DIALOG_URL, MESSAGE_URL, MATTERMOST_ACCESS, NGROK_URL, POST_URL, USER_URL, DIRECT_URL } = require('../enums/config');
+
 
 const handleOpenDialogRequest = async (req, res) => {
     const response_url = req.body.response_url;
