@@ -10,10 +10,12 @@ const {
     handleDeleteRequest,
     handleCancelDeleteRequest,
     handleConfirmDeleteRequest,
-    handleApproveRequest,
+    handleOpenAdviceDialog,
     handleOpenCommentRequest,
     handleCommentRequest,
     handleSendListRequest,
+    handleAdviceRequest,
+    handleApproveRequest,
 } = require('../controllers/request.mattermost.controller');
 
 router.post('/open-dialog-request', handleOpenDialogRequest);
@@ -27,9 +29,11 @@ router.post('/delete-request', handleDeleteRequest);
 router.post('/delete-request/:code', handleDeleteRequest);
 router.post('/cancel-delete-request', handleCancelDeleteRequest);
 router.post('/confirm-delete-request/:id', handleConfirmDeleteRequest);
-router.post('/approve-request/:id', handleApproveRequest);
+router.post('/open-advice-dialog/:id', handleOpenAdviceDialog);
+router.post('/advice-request/:id', handleAdviceRequest);
 router.post('/open-comment-request/:id', handleOpenCommentRequest);
 router.post('/comment-request/:id', handleCommentRequest);
 router.post('/send-list-request', handleSendListRequest);
+router.post('/approve-request/:id', handleApproveRequest);
 
 module.exports = router;
