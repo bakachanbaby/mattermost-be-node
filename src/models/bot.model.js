@@ -9,6 +9,7 @@ const BotSchema = new Schema({
   accessToken: String,
   channelIds: [String],
   teamId: String,
+  botChannelId: String,
 });
 
 const BotModel = mongoose.model('Bot', BotSchema);
