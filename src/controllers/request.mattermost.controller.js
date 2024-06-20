@@ -362,7 +362,7 @@ const handleAddRequest = async (req, res) => {
                     // Hiển thị danh sách kiến nghị mới
                     try {
                         const tableTitle = "## Danh sách kiến nghị";
-                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                         const tableRows = lstRequest.map((request, index) => {
                             const date = new Date(request.createdDate);
@@ -521,7 +521,7 @@ const handleViewTableRequest = async (req, res) => {
 
             else {
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
@@ -635,7 +635,7 @@ const handleViewTableRequest = async (req, res) => {
 
             else {
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
@@ -737,7 +737,7 @@ const handleViewTableRequest = async (req, res) => {
 
             else {
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
@@ -874,7 +874,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category, short: true },
+                { title: "Danh mục", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -987,7 +987,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category, short: true },
+                { title: "Danh mục", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -1099,7 +1099,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category, short: true },
+                { title: "Danh mục", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -1284,7 +1284,7 @@ const handleSendListRequest = async (req, res) => {
                 );
 
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
@@ -1428,7 +1428,7 @@ const handleSendListRequest = async (req, res) => {
                     const message = `Đã nhận được danh sách kiến nghị mới`;
 
                     const tableTitle = "## Danh sách kiến nghị";
-                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                     const tableRows = dataRequest.map((request, index) => {
                         const date = new Date(request.createdDate);
@@ -2040,7 +2040,7 @@ const handleEditRequest = async (req, res) => {
                     // Hiển thị danh sách kiến nghị 
                     try {
                         const tableTitle = "## Danh sách kiến nghị";
-                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                         const tableRows = lstRequest.map((request, index) => {
                             const date = new Date(request.createdDate);
@@ -2352,7 +2352,7 @@ const handleDeleteRequest = async (req, res) => {
                                 { title: "Tiêu đề", value: request.title, short: true },
                                 { title: "Ngày tạo", value: formattedDate, short: true },
                                 { title: "Ngày nhận", value: formattedReceivedDate, short: true },
-                                { title: "Lĩnh vực", value: request.category, short: true },
+                                { title: "Danh mục", value: request.category, short: true },
                                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                                 { title: "Nội dung", value: request.content, short: false },
                             ],
@@ -2546,7 +2546,7 @@ const handleConfirmDeleteRequest = async (req, res) => {
                     console.log(lstRequest);
 
                     const tableTitle = "## Danh sách kiến nghị";
-                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Lĩnh vực | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                    const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
 
                     const tableRows = lstRequest.map((request, index) => {
                         const date = new Date(request.createdDate);
@@ -2838,7 +2838,7 @@ const handleAdviceRequest = async (req, res) => {
                                 { title: "Tiêu đề", value: request.title, short: true },
                                 { title: "Ngày tạo", value: formattedDate, short: true },
                                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                                { title: "Lĩnh vực", value: request.category, short: true },
+                                { title: "Danh mục", value: request.category, short: true },
                                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                                 { title: "Nội dung", value: request.content, short: false },
                             ],
@@ -2965,7 +2965,7 @@ const handleApproveRequest = async (req, res) => {
                             { title: "Tiêu đề", value: request.title, short: true },
                             { title: "Ngày tạo", value: formattedDate, short: true },
                             { title: "Ngày nhận", value: request.receivedDate, short: true },
-                            { title: "Lĩnh vực", value: request.category, short: true },
+                            { title: "Danh mục", value: request.category, short: true },
                             { title: "Trạng thái", value: getStatus(request.status), short: true },
                             { title: "Nội dung", value: request.content, short: false },
                         ],
@@ -3150,7 +3150,7 @@ const handleCommentRequest = async (req, res) => {
                                             { title: "Tiêu đề", value: e.data.title, short: true },
                                             { title: "Ngày tạo", value: formattedDate, short: true },
                                             { title: "Ngày nhận", value: e.data.receivedDate, short: true },
-                                            { title: "Lĩnh vực", value: e.data.category, short: true },
+                                            { title: "Danh mục", value: e.data.category, short: true },
                                             { title: "Trạng thái", value: getStatus(e.data.status), short: true },
                                             { title: "Nội dung", value: e.data.content, short: false },
                                             { title: "Bình luận", value: e.data.comments.content, short: false },
