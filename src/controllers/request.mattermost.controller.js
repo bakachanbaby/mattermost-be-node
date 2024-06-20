@@ -371,7 +371,7 @@ const handleAddRequest = async (req, res) => {
 
                         const messageData = {
                             channel_id: channel_id,
-                            message: `Người dùng **${req.body.user_name}** đã thêm kiến nghị mới với mã **${e.data.code}**`,
+                            message: `Người dùng **${req.body.user_name || user.username }** đã thêm kiến nghị mới với mã **${e.data.code}**`,
                             props: {
                                 attachments: [
                                     {
@@ -1690,7 +1690,7 @@ const handleOpenEditRequest = async (req, res) => {
         if (user.role !== 'nv') {
             const messageData = {
                 channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền sửa kiến nghị`,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền sửa kiến nghị`,
             };
 
             await axios.post(MESSAGE_URL, messageData, {
@@ -2047,7 +2047,7 @@ const handleEditRequest = async (req, res) => {
 
                         const messageData = {
                             channel_id: channel_id,
-                            message: `Người dùng **${req.body.user_name}** đã sửa kiến nghị với mã **${e.data.code}**`,
+                            message: `Người dùng **${req.body.user_name || user.username}** đã sửa kiến nghị với mã **${e.data.code}**`,
                             props: {
                                 attachments: [
                                     {
@@ -2134,7 +2134,7 @@ const handleOpenDeleteRequest = async (req, res) => {
         if (user.role !== 'nv') {
             const messageData = {
                 channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền xóa kiến nghị`,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xóa kiến nghị`,
             };
 
             await axios.post(MESSAGE_URL, messageData, {
@@ -2245,7 +2245,7 @@ const handleDeleteRequest = async (req, res) => {
         if (user.role !== 'nv') {
             const messageData = {
                 channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền xóa kiến nghị`,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xóa kiến nghị`,
             };
 
             await axios.post(MESSAGE_URL, messageData, {
@@ -2551,7 +2551,7 @@ const handleConfirmDeleteRequest = async (req, res) => {
 
                     const messageData = {
                         channel_id: channel_id,
-                        message: `Người dùng **${req.body.user_name}** đã xóa kiến nghị với mã **${e.data.request.code}**`,
+                        message: `Người dùng **${req.body.user_name || user.username}** đã xóa kiến nghị với mã **${e.data.request.code}**`,
                         props: {
                             attachments: [
                                 {
@@ -2936,7 +2936,7 @@ const handleApproveRequest = async (req, res) => {
 
         const messageData = {
             channel_id: channel_id,
-            message: `Người dùng **${req.body.user_name}** đã chấp thuận kiến nghị với mã **${request.code}**`,
+            message: `Người dùng **${req.body.user_name || user.username}** đã chấp thuận kiến nghị với mã **${request.code}**`,
         };
 
         await axios.post(MESSAGE_URL, messageData, {
@@ -3134,7 +3134,7 @@ const handleCommentRequest = async (req, res) => {
 
                         const messageData = {
                             channel_id: channel_id,
-                            message: "Người dùng **" + req.body.user_name + "** đã bình luận kiến nghị với mã **" + e.data.code + "**",
+                            message: `Người dùng **${req.body.user_name || user.username}** đã bình luận kiến nghị với mã **${e.data.code}**`,
                             props: {
                                 attachments: [
                                     {
