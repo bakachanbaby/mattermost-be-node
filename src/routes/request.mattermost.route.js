@@ -11,10 +11,14 @@ const {
     handleOpenDeleteRequest,
     handleDeleteRequest,
     handleCancelDeleteRequest,
+    handleOpenConfirmDeleteRequest,
     handleConfirmDeleteRequest,
+    handleSelectRequestToComment,
     handleOpenCommentRequest,
     handleCommentRequest,
     handleSendListRequest,
+    handleCancelSendListRequest,
+    handleConfirmSendListRequest,
     handleRequestToAdvice,
     handleOpenAdviceDialog,
     handleAdviceRequest,
@@ -33,14 +37,19 @@ router.post('/open-delete-request', handleOpenDeleteRequest);
 router.post('/delete-request', handleDeleteRequest);
 router.post('/delete-request/:code', handleDeleteRequest);
 router.post('/cancel-delete-request', handleCancelDeleteRequest);
+router.post('/open-confirm-delete-request/:id', handleOpenConfirmDeleteRequest);
 router.post('/confirm-delete-request/:id', handleConfirmDeleteRequest);
 router.post('/open-request-to-advice', handleRequestToAdvice);
 router.post('/open-advice-dialog/:id', handleOpenAdviceDialog);
 router.post('/open-advice-dialog', handleOpenAdviceDialog);
 router.post('/advice-request/:id', handleAdviceRequest);
+router.post('/select-request-to-comment', handleSelectRequestToComment);
 router.post('/open-comment-request/:id', handleOpenCommentRequest);
+router.post('/open-comment-request', handleOpenCommentRequest);
 router.post('/comment-request/:id', handleCommentRequest);
 router.post('/send-list-request', handleSendListRequest);
+router.post('/cancel-send-list-request', handleCancelSendListRequest);
+router.post('/confirm-send-list-request', handleConfirmSendListRequest);
 router.post('/approve-request/:id', handleApproveRequest);
 
 module.exports = router;

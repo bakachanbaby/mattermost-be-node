@@ -1,7 +1,7 @@
 const REQUEST_STATUS = {
     //Vừa khởi tạo
     IDLE: 'IDLE',
-    //Đã gửi request
+    //Đã gửi kiến nghị
     SENT: 'SENT',
     //Đang chờ xử lý
     PENDING: 'PENDING',
