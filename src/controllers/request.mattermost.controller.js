@@ -233,7 +233,8 @@ const handleOpenDialogRequest = async (req, res) => {
                         "default": "",
                         "placeholder": "Vui lòng nhập nội dung",
                         "help_text": "",
-                        "optional": false
+                        "optional": false,
+                        "max_length": 50000,
                     },
                     {
                         "display_name": "Ngày nhận kiến nghị",
@@ -1815,7 +1816,8 @@ const handleOpenEditRequest = async (req, res) => {
                         "default": request.content,
                         "placeholder": "Vui lòng nhập nội dung",
                         "help_text": "",
-                        "optional": false
+                        "optional": false,
+                        "max_length": 50000,
                     },
                     {
                         "display_name": "Ngày nhận kiến nghị",
@@ -3036,7 +3038,8 @@ const handleOpenCommentRequest = async (req, res) => {
                         "default": "",
                         "placeholder": "Vui lòng nhập nội dung",
                         "help_text": "",
-                        "optional": false
+                        "optional": false,
+                        "max_length": 50000,
                     }
                 ],
                 notify_on_cancel: true,
