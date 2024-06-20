@@ -10,7 +10,7 @@ const RequestSchema = new Schema({
         type: String,
         default: REQUEST_STATUS.IDLE,
     },
-    category: Object,
+    category: String,
     result: {
         type: String,
         default: "Đang chờ xử lý",

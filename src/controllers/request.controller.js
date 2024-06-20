@@ -11,14 +11,11 @@ const createRequest = async (req, res) => {
             content,
             receivedDate,
             status,
-            categoryId,
+            category,
             result,
             createdDate,
         } = req.body;
 
-        const category = await Category.findById(categoryId);
-        console.log(category);
-        console.log('Create request');
         const requests = await Request.find();
         requests.sort((a, b) => {
             const numberA = parseInt(a.code.replace('KN', ''));
@@ -83,14 +80,11 @@ const editRequest = async (req, res) => {
             content,
             receivedDate,
             status,
-            categoryId,
+            category,
             result,
             createdDate,
             code,
         } = req.body;
-
-        const category = await Category.findById(categoryId);
-        console.log(category);
 
         const updatedRequest = await Request.findByIdAndUpdate(
             id,

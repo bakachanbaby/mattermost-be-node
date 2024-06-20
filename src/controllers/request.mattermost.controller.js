@@ -196,15 +196,15 @@ const handleOpenDialogRequest = async (req, res) => {
             return res.status(200).send();
         }
 
-        let lstCategory = await CategoryModal.find();
-        lstCategory = lstCategory.map((item) => {
-            return {
-                text: item.description,
-                value: item._id
-            };
-        });
-        console.log(req.body);
-        console.log(lstCategory);
+        // let lstCategory = await CategoryModal.find();
+        // lstCategory = lstCategory.map((item) => {
+        //     return {
+        //         text: item.description,
+        //         value: item._id
+        //     };
+        // });
+        // console.log(req.body);
+        // console.log(lstCategory);
 
         console.log(response_url, trigger_id, channel_id);
         const dialog = {
@@ -259,10 +259,14 @@ const handleOpenDialogRequest = async (req, res) => {
                     {
                         "display_name": "Danh mục",
                         "name": "category",
-                        "type": "select",
-                        "placeholder": "Vui lòng chọn danh mục",
-                        "options": lstCategory
-                    }
+                        "type": "text",
+                        "subtype": "",
+                        "default": "",
+                        "placeholder": "Vui lòng nhập danh mục",
+                        "help_text": "",
+                        "optional": false,
+                        "requiredText": "Vui lòng nhập danh mục"
+                    },
                 ],
                 notify_on_cancel: true,
                 state: JSON.stringify({ response_url, channel_id, trigger_id, post_id })
@@ -321,12 +325,12 @@ const handleAddRequest = async (req, res) => {
                 title: req.body.submission.title,
                 content: req.body.submission.content.replace(/\n/g, ''),
                 receivedDate: (`${req.body.submission.receivedDay}/${req.body.submission.receivedMonth}/${req.body.submission.receivedYear}`),
-                categoryId: req.body.submission.category,
+                category: req.body.submission.category,
             }
 
             console.log(reqRequest);
 
-            if (!reqRequest.title || !reqRequest.content || !reqRequest.receivedDate || !reqRequest.categoryId) {
+            if (!reqRequest.title || !reqRequest.content || !reqRequest.receivedDate || !reqRequest.category) {
                 return res.status(200).send();
             }
 
@@ -365,7 +369,7 @@ const handleAddRequest = async (req, res) => {
                             const receivedDate = new Date(request.receivedDate);
                             const formattedDate = date.toLocaleDateString('vi-VN');
                             const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                         });
                         const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -524,7 +528,7 @@ const handleViewTableRequest = async (req, res) => {
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -638,7 +642,7 @@ const handleViewTableRequest = async (req, res) => {
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -740,7 +744,7 @@ const handleViewTableRequest = async (req, res) => {
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -870,7 +874,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category.description, short: true },
+                { title: "Lĩnh vực", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -983,7 +987,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category.description, short: true },
+                { title: "Lĩnh vực", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -1095,7 +1099,7 @@ const handleViewRequest = async (req, res) => {
                 { title: "Tiêu đề", value: request.title, short: true },
                 { title: "Ngày tạo", value: formattedDate, short: true },
                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                { title: "Lĩnh vực", value: request.category.description, short: true },
+                { title: "Lĩnh vực", value: request.category, short: true },
                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                 { title: "Nội dung", value: request.content, short: false },
             ]
@@ -1287,7 +1291,7 @@ const handleSendListRequest = async (req, res) => {
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                 });
 
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
@@ -1431,7 +1435,7 @@ const handleSendListRequest = async (req, res) => {
                         const receivedDate = new Date(request.receivedDate);
                         const formattedDate = date.toLocaleDateString('vi-VN');
                         const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                     });
                     const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -1765,15 +1769,15 @@ const handleOpenEditRequest = async (req, res) => {
             return res.status(200).send();
         }
 
-        let lstCategory = await CategoryModal.find();
-        lstCategory = lstCategory.map((item) => {
-            return {
-                text: item.description,
-                value: item._id
-            };
-        });
-        console.log(req.body);
-        console.log(lstCategory);
+        // let lstCategory = await CategoryModal.find();
+        // lstCategory = lstCategory.map((item) => {
+        //     return {
+        //         text: item.description,
+        //         value: item._id
+        //     };
+        // });
+        // console.log(req.body);
+        // console.log(lstCategory);
 
         console.log(response_url, trigger_id, channel_id);
 
@@ -1849,10 +1853,12 @@ const handleOpenEditRequest = async (req, res) => {
                     {
                         "display_name": "Danh mục",
                         "name": "category",
-                        "type": "select",
-                        "placeholder": "Vui lòng chọn danh mục",
-                        "default": request.category._id,
-                        "options": lstCategory
+                        "type": "text",
+                        "placeholder": "Vui lòng nhập danh mục",
+                        "default": request.category,
+                        "help_text": "",
+                        "optional": false,
+                        "requiredText": "Vui lòng nhập danh mục"
                     }
                 ],
                 notify_on_cancel: true,
@@ -1914,12 +1920,12 @@ const handleEditRequest = async (req, res) => {
                 title: req.body.submission.title,
                 content: req.body.submission.content,
                 receivedDate: (`${req.body.submission.receivedDay}/${req.body.submission.receivedMonth}/${req.body.submission.receivedYear}`),
-                categoryId: req.body.submission.category,
+                category: req.body.submission.category,
             }
 
             console.log('Edit request ', reqRequest);
 
-            if (!reqRequest.title || !reqRequest.content || !reqRequest.receivedDate || !reqRequest.categoryId) {
+            if (!reqRequest.title || !reqRequest.content || !reqRequest.receivedDate || !reqRequest.category) {
                 return res.status(200).send();
             }
 
@@ -2041,7 +2047,7 @@ const handleEditRequest = async (req, res) => {
                             const receivedDate = new Date(request.receivedDate);
                             const formattedDate = date.toLocaleDateString('vi-VN');
                             const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                         });
                         const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -2346,7 +2352,7 @@ const handleDeleteRequest = async (req, res) => {
                                 { title: "Tiêu đề", value: request.title, short: true },
                                 { title: "Ngày tạo", value: formattedDate, short: true },
                                 { title: "Ngày nhận", value: formattedReceivedDate, short: true },
-                                { title: "Lĩnh vực", value: request.category.description, short: true },
+                                { title: "Lĩnh vực", value: request.category, short: true },
                                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                                 { title: "Nội dung", value: request.content, short: false },
                             ],
@@ -2545,7 +2551,7 @@ const handleConfirmDeleteRequest = async (req, res) => {
                     const tableRows = lstRequest.map((request, index) => {
                         const date = new Date(request.createdDate);
                         const formattedDate = date.toLocaleDateString('vi-VN');
-                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category.description} | ${getStatus(request.status)} |`;
+                        return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
                     });
                     const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -2832,7 +2838,7 @@ const handleAdviceRequest = async (req, res) => {
                                 { title: "Tiêu đề", value: request.title, short: true },
                                 { title: "Ngày tạo", value: formattedDate, short: true },
                                 { title: "Ngày nhận", value: request.receivedDate, short: true },
-                                { title: "Lĩnh vực", value: request.category.description, short: true },
+                                { title: "Lĩnh vực", value: request.category, short: true },
                                 { title: "Trạng thái", value: getStatus(request.status), short: true },
                                 { title: "Nội dung", value: request.content, short: false },
                             ],
@@ -2959,7 +2965,7 @@ const handleApproveRequest = async (req, res) => {
                             { title: "Tiêu đề", value: request.title, short: true },
                             { title: "Ngày tạo", value: formattedDate, short: true },
                             { title: "Ngày nhận", value: request.receivedDate, short: true },
-                            { title: "Lĩnh vực", value: request.category.description, short: true },
+                            { title: "Lĩnh vực", value: request.category, short: true },
                             { title: "Trạng thái", value: getStatus(request.status), short: true },
                             { title: "Nội dung", value: request.content, short: false },
                         ],
@@ -3144,7 +3150,7 @@ const handleCommentRequest = async (req, res) => {
                                             { title: "Tiêu đề", value: e.data.title, short: true },
                                             { title: "Ngày tạo", value: formattedDate, short: true },
                                             { title: "Ngày nhận", value: e.data.receivedDate, short: true },
-                                            { title: "Lĩnh vực", value: e.data.category.description, short: true },
+                                            { title: "Lĩnh vực", value: e.data.category, short: true },
                                             { title: "Trạng thái", value: getStatus(e.data.status), short: true },
                                             { title: "Nội dung", value: e.data.content, short: false },
                                             { title: "Bình luận", value: e.data.comments.content, short: false },
