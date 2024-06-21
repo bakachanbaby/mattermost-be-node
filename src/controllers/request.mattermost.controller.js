@@ -2097,7 +2097,7 @@ const handleEditRequest = async (req, res) => {
         try {
             const reqRequest = {
                 title: req.body.submission.title,
-                content: req.body.submission.content,
+                content: req.body.submission.content.replace(/\n/g, ''),
                 receivedDate: (`${req.body.submission.receivedDay}/${req.body.submission.receivedMonth}/${req.body.submission.receivedYear}`),
                 category: req.body.submission.category,
             }
