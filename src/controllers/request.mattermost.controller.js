@@ -61,6 +61,14 @@ const compareDate = (day, month, year) => {
     return true;
 }
 
+const replaceText = (text) => {
+    // Kiểu tra nếu text có \n, | thì thay thế bằng dấu cách
+
+    let newText = text.replace(/\n/g, ' ');
+    newText = newText.replace(/\|/g, '-');
+    return newText;
+}
+
 const optionDay = [
     { text: "1", value: "1" },
     { text: "2", value: "2" },
@@ -324,7 +332,7 @@ const handleAddRequest = async (req, res) => {
         try {
             const reqRequest = {
                 title: req.body.submission.title,
-                content: req.body.submission.content.replace(/\n/g, ''),
+                content: replaceText(req.body.submission.content),
                 receivedDate: (`${req.body.submission.receivedDay}/${req.body.submission.receivedMonth}/${req.body.submission.receivedYear}`),
                 category: req.body.submission.category,
             }
@@ -2097,7 +2105,7 @@ const handleEditRequest = async (req, res) => {
         try {
             const reqRequest = {
                 title: req.body.submission.title,
-                content: req.body.submission.content.replace(/\n/g, ''),
+                content: replaceText(req.body.submission.content),
                 receivedDate: (`${req.body.submission.receivedDay}/${req.body.submission.receivedMonth}/${req.body.submission.receivedYear}`),
                 category: req.body.submission.category,
             }
@@ -2642,7 +2650,7 @@ const handleDeleteRequest = async (req, res) => {
                                         style: "secondary"
                                     },
                                     {
-                                        name: "Loại bỏ 2",
+                                        name: "Loại bỏ",
                                         integration: {
                                             url: `${NGROK_URL}/api/request-mattermost/open-confirm-delete-request/${request._id}`,
                                             context: {
@@ -2794,7 +2802,10 @@ const handleOpenConfirmDeleteRequest = async (req, res) => {
 
 const handleConfirmDeleteRequest = async (req, res) => {
     try {
-        const state = JSON.parse(req.body.state);
+        let state = {}  
+        if(req.body.state){
+            state = JSON.parse(req.body.state);
+        }
         const channel_id = req.body.channel_id;
         // const { post_id, user_name } = req.body;
 
@@ -2812,9 +2823,7 @@ const handleConfirmDeleteRequest = async (req, res) => {
         request.status = REQUEST_STATUS.REJECTED;
         await request.save();
 
-
         // console.log(e.data);
-
         await axios.delete(`${POST_URL}/${post_id}`, {
             headers: {
                 'Authorization': `Bearer ${access}`,
