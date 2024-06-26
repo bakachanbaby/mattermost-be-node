@@ -23,6 +23,10 @@ const {
     handleOpenAdviceDialog,
     handleAdviceRequest,
     handleApproveRequest,
+    handleSumaryRequest,
+    handleViewTableApprovedRequest,
+    handleViewTablePendingRequest,
+    handleViewTableRejectedRequest,
 } = require('../controllers/request.mattermost.controller');
 
 router.post('/open-dialog-request', handleOpenDialogRequest);
@@ -51,5 +55,9 @@ router.post('/send-list-request', handleSendListRequest);
 router.post('/cancel-send-list-request', handleCancelSendListRequest);
 router.post('/confirm-send-list-request', handleConfirmSendListRequest);
 router.post('/approve-request/:id', handleApproveRequest);
+router.post('/sumary-requests', handleSumaryRequest);
+router.post('/view-table-approved-request', handleViewTableApprovedRequest);
+router.post('/view-table-pending-request', handleViewTablePendingRequest);
+router.post('/view-table-rejected-request', handleViewTableRejectedRequest);
 
 module.exports = router;

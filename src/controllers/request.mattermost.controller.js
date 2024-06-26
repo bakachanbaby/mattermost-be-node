@@ -20,7 +20,7 @@ const getStatus = (status) => {
         case REQUEST_STATUS.WAITING:
             return 'Đang chờ ý kiến';
         case REQUEST_STATUS.APPROVED:
-            return 'Đã xử lý';
+            return 'Đã chấp nhận';
         case REQUEST_STATUS.REJECTED:
             return 'Đã từ chối';
         default:
@@ -371,14 +371,14 @@ const handleAddRequest = async (req, res) => {
                     // Hiển thị danh sách kiến nghị mới
                     try {
                         const tableTitle = "## Danh sách kiến nghị";
-                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
                         const tableRows = lstRequest.map((request, index) => {
                             const date = new Date(request.createdDate);
                             const receivedDate = new Date(request.receivedDate);
                             const formattedDate = date.toLocaleDateString('vi-VN');
                             const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                         });
                         const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -529,17 +529,25 @@ const handleViewTableRequest = async (req, res) => {
             }
 
             else {
-                const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableTitle = "## Danh sách kiến nghị\n";
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |\n`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                 });
-                const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+                const table = tableTitle + tableHeader + tableRows.join('\n');
+
+                console.log(table);
+
+                const data = `| Left-Aligned  | Center Aligned  | Right Aligned |
+| :------------ |:---------------:| -----:|
+| Left column 1 | this text       |  $100 |
+| Left column 2 | is              |   $10 |
+| Left column 3 | centered        |    $1 |`
 
                 const messageData = {
                     channel_id: channel_id,
@@ -644,14 +652,14 @@ const handleViewTableRequest = async (req, res) => {
 
             else {
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -746,14 +754,14 @@ const handleViewTableRequest = async (req, res) => {
 
             else {
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận|\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -1272,6 +1280,36 @@ const handleSendListRequest = async (req, res) => {
             return res.status(200).send();
         }
 
+        let lstRequest = await RequestModal.find();
+
+        if (access === MATTERMOST_ACCESS_BOT_TP) {
+            lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.SENT);
+        }
+        else if (access === MATTERMOST_ACCESS) {
+            lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.IDLE);
+        }
+
+
+        if (lstRequest.length === 0) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Không có kiến nghị nào mới được thêm`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+
+
+
+
         // if (post_id) {
         //     await axios.delete(`${POST_URL}/${post_id}`, {
         //         headers: {
@@ -1283,14 +1321,27 @@ const handleSendListRequest = async (req, res) => {
         // }
 
         try {
+
+            const tableTitle = "## Danh sách kiến nghị\n";
+            const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |\n`;
+
+            const tableRows = lstRequest.map((request, index) => {
+                const date = new Date(request.createdDate);
+                const receivedDate = new Date(request.receivedDate);
+                const formattedDate = date.toLocaleDateString('vi-VN');
+                const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
+                return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
+            });
+
+            const table = tableTitle + tableHeader + tableRows.join('\n');
+
             const messageData = {
                 channel_id: channel_id,
                 message: "",
                 props: {
                     attachments: [
                         {
-                            text: "### Bạn có thật sự muốn gửi danh sách kiến nghị trên?",
-
+                            text: table,
                             actions: [
                                 {
                                     name: "Hủy bỏ",
@@ -1504,14 +1555,14 @@ const handleConfirmSendListRequest = async (req, res) => {
                 );
 
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = lstRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                 });
 
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
@@ -1604,14 +1655,14 @@ const handleConfirmSendListRequest = async (req, res) => {
                 const message = `Đã nhận được danh sách kiến nghị mới`;
 
                 const tableTitle = "## Danh sách kiến nghị";
-                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
                 const tableRows = dataRequest.map((request, index) => {
                     const date = new Date(request.createdDate);
                     const receivedDate = new Date(request.receivedDate);
                     const formattedDate = date.toLocaleDateString('vi-VN');
                     const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                    return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                 });
                 const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -2271,14 +2322,14 @@ const handleEditRequest = async (req, res) => {
                     // Hiển thị danh sách kiến nghị 
                     try {
                         const tableTitle = "## Danh sách kiến nghị";
-                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+                        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
                         const tableRows = lstRequest.map((request, index) => {
                             const date = new Date(request.createdDate);
                             const receivedDate = new Date(request.receivedDate);
                             const formattedDate = date.toLocaleDateString('vi-VN');
                             const formattedReceivedDate = receivedDate.toLocaleDateString('vi-VN');
-                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+                            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
                         });
                         const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -2802,8 +2853,8 @@ const handleOpenConfirmDeleteRequest = async (req, res) => {
 
 const handleConfirmDeleteRequest = async (req, res) => {
     try {
-        let state = {}  
-        if(req.body.state){
+        let state = {}
+        if (req.body.state) {
             state = JSON.parse(req.body.state);
         }
         const channel_id = req.body.channel_id;
@@ -2980,12 +3031,12 @@ const handleConfirmDeleteRequest = async (req, res) => {
         }
 
         const tableTitle = "## Danh sách kiến nghị";
-        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng |\n| --- | --- | --- | --- | --- | --- |`;
+        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
 
         const tableRows = lstRequest.map((request, index) => {
             const date = new Date(request.createdDate);
             const formattedDate = date.toLocaleDateString('vi-VN');
-            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} |`;
+            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
         });
         const table = [tableTitle, tableHeader, ...tableRows].join('\n');
 
@@ -3030,7 +3081,30 @@ const handleRequestToAdvice = async (req, res) => {
     try {
         // Gửi thông báo message cho user trong đó có danh sách các kiến nghị có thể sửa
         const { channel_id, user_id } = req.body;
-        console.log(req.body);
+        console.log('Advice to Request ', req.body);
+
+        const lstBot = await BotModel.find();
+
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+
+        if (req.body.user_name !== 'qlp-dannguyen-thanhpho') {
+
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xin ý kiến kiến nghị`,
+            }
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
 
         let lstRequest = await RequestModal.find();
 
@@ -3042,7 +3116,6 @@ const handleRequestToAdvice = async (req, res) => {
                 value: request._id
             }
         });
-
 
         try {
             const messageData = {
@@ -3417,7 +3490,7 @@ const handleSelectRequestToComment = async (req, res) => {
     try {
         // Gửi thông báo message cho user trong đó có danh sách các kiến nghị có thể sửa
         const { channel_id, user_id } = req.body;
-        console.log(req.body);
+        console.log('request comment ', req.body);
 
         const lstBot = await BotModel.find();
         let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
@@ -3435,7 +3508,6 @@ const handleSelectRequestToComment = async (req, res) => {
 
         // Lấy ra người dùng có id là user_id
         const user = await UserModel.findOne({ userId: req.body.user_id });
-        console.log(req.body);
         if (!user) {
             // return res.status(404).send('User not found');
             const messageData = {
@@ -3454,23 +3526,37 @@ const handleSelectRequestToComment = async (req, res) => {
             return res.status(200).send();
         }
 
-        // // Kiểm tra xem người dùng có quyền sửa kiến nghị không
-        // if (user.role !== 'nv') {
-        //     const messageData = {
-        //         channel_id: channel_id,
-        //         message: `Người dùng **${req.body.user_name || user.username}** không có quyền bình luận kiến nghị`,
-        //     };
+        if (user && user.role === 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền bình luận kiến nghị`,
+            };
 
-        //     await axios.post(MESSAGE_URL, messageData, {
-        //         headers: {
-        //             'Authorization': `Bearer ${access}`,
-        //             'Content-Type': 'application/json'
-        //         }
-        //     });
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        //     return res.status(200).send();
-        // }
+            return res.status(200).send();
+        }
 
+        if (req.body.user_name !== 'qlp-dannguyen-thanhpho') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** chỉ được bình luận kiến nghị được gửi`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
 
         try {
             const messageData = {
@@ -3753,6 +3839,493 @@ const handleCommentRequest = async (req, res) => {
     }
 };
 
+const handleSumaryRequest = async (req, res) => {
+    // Thống kê số lượng kiến nghị đã được chấp nhận, số lượng kiến nghị loại bỏ và số lượng kiến nghị chưa được xử lý, cũng như ở cuối sẽ có 3 nút xem danh sách các kiến nghị trên
+
+    try {
+        const { channel_id, user_id } = req.body;
+        console.log('Sumary request ', req.body);
+
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem tổng hợp kiến nghị`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        let lstRequest = await RequestModal.find();
+
+        const numberRequestApproved = lstRequest.filter((request) => request.status === REQUEST_STATUS.APPROVED).length;
+
+        const numberRequestRejected = lstRequest.filter((request) => request.status === REQUEST_STATUS.REJECTED).length;
+
+        const numberRequestPending = lstRequest.filter((request) => request.status === REQUEST_STATUS.PENDING).length;
+
+        const text = `- Số lượng kiến nghị đã chấp thuận: **${numberRequestApproved}**\n- Số lượng kiến nghị đã loại bỏ: **${numberRequestRejected}**\n- Số lượng kiến nghị chờ xử lý: **${numberRequestPending}**`;
+
+        try {
+            const messageData = {
+                channel_id: channel_id,
+                message: "",
+                props: {
+                    attachments: [
+                        {
+                            text: text,
+                            title: 'Thống kê kiến nghị',
+                            actions: [
+                                {
+                                    name: "Danh sách kiến nghị chấp nhận",
+                                    type: "button",
+                                    integration: {
+                                        url: `${NGROK_URL}/api/request-mattermost/view-table-approved-request`,
+                                        context: {
+                                            action: "view"
+                                        }
+                                    },
+                                    style: "primary"
+                                },
+                                {
+                                    name: "Danh sách kiến nghị loại bỏ",
+                                    type: "button",
+                                    integration: {
+                                        url: `${NGROK_URL}/api/request-mattermost/view-table-rejected-request`,
+                                        context: {
+                                            action: "view"
+                                        }
+                                    },
+                                    style: "primary"
+                                },
+                                {
+                                    name: "Danh sách kiến nghị chờ xử lý",
+                                    type: "button",
+                                    integration: {
+                                        url: `${NGROK_URL}/api/request-mattermost/view-table-pending-request`,
+                                        context: {
+                                            action: "view"
+                                        }
+                                    },
+                                    style: "primary"
+                                }
+
+                            ]
+                        }
+                    ]
+                }
+            };
+            const response = await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+
+
+            console.log('Message sent:', response.data);
+            res.status(200).send();
+
+        }
+        catch (error) {
+            console.error('Error sending message:', error);
+            res.status(500).send();
+        }
+
+        return res.status(200).send();
+
+    } catch (error) {
+        console.error('Error handling sumary request:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+const handleViewTableApprovedRequest = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        console.log('View table approved request ', req.body);
+
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị đã chấp thuận`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị đã chấp thuận`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        let lstRequest = await RequestModal.find();
+
+        lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.APPROVED);
+
+        if (lstRequest.length === 0) {
+            try {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Không có kiến nghị nào đã được chấp thuận`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send();
+            }
+        }
+
+        const tableTitle = "## Danh sách kiến nghị đã chấp thuận";
+
+        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
+
+        const tableRows = lstRequest.map((request, index) => {
+            const date = new Date(request.createdDate);
+            const formattedDate = date.toLocaleDateString('vi-VN');
+            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
+        });
+
+        const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `Danh sách kiến nghị đã chấp thuận`,
+            props: {
+                attachments: [
+                    {
+                        text: table,
+                    }
+                ]
+            }
+        };
+
+        try {
+            const response = await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Message sent:', response.data);
+
+            res.status(200).send();
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            res.status(500).send();
+        }
+
+        return res.status(200).send();
+    }
+    catch (error) {
+        console.error('Error handling view table approved request:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+const handleViewTableRejectedRequest = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        console.log('View table approved request ', req.body);
+
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị đã loại bỏ`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị đã loại bỏ`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        let lstRequest = await RequestModal.find();
+
+        lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.REJECTED);
+
+        if (lstRequest.length === 0) {
+            try {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Không có kiến nghị nào đã loại bỏ`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send();
+            }
+        }
+
+        const tableTitle = "## Danh sách kiến nghị đã loại bỏ";
+
+        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
+
+        const tableRows = lstRequest.map((request, index) => {
+            const date = new Date(request.createdDate);
+            const formattedDate = date.toLocaleDateString('vi-VN');
+            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
+        });
+
+        const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `Danh sách kiến nghị đã loại bỏ`,
+            props: {
+                attachments: [
+                    {
+                        text: table,
+                    }
+                ]
+            }
+        };
+
+        try {
+            const response = await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Message sent:', response.data);
+
+            res.status(200).send();
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            res.status(500).send();
+        }
+
+        return res.status(200).send();
+    }
+    catch (error) {
+        console.error('Error handling view table approved request:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+const handleViewTablePendingRequest = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        console.log('View table approved request ', req.body);
+
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        let lstRequest = await RequestModal.find();
+
+        lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.PENDING);
+
+        if (lstRequest.length === 0) {
+            try {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Không có kiến nghị nào chờ xử lý`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                res.status(500).send();
+            }
+        }
+
+        const tableTitle = "## Danh sách kiến nghị chờ xử lý";
+
+        const tableHeader = `| STT | Mã kiến nghị | Tiêu đề | Nội dung | Ngày tạo | Ngày nhận | Danh mục | Tình trạng | Bình luận |\n| --- | --- | --- | --- | --- | --- |`;
+
+        const tableRows = lstRequest.map((request, index) => {
+            const date = new Date(request.createdDate);
+            const formattedDate = date.toLocaleDateString('vi-VN');
+            return `| ${index + 1} | ${request.code} | ${request.title} | ${request.content} | ${formattedDate} | ${request.receivedDate} | ${request.category} | ${getStatus(request.status)} | ${request.comments && request.comments.content ? replaceText(request.comments.content) : 'Chưa có bình luận'} |`;
+        });
+
+        const table = [tableTitle, tableHeader, ...tableRows].join('\n');
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `Danh sách kiến nghị chờ xử lý`,
+            props: {
+                attachments: [
+                    {
+                        text: table,
+                    }
+                ]
+            }
+        };
+
+        try {
+            const response = await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Message sent:', response.data);
+
+            res.status(200).send();
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            res.status(500).send();
+        }
+
+        return res.status(200).send();
+
+    }
+    catch (error) {
+        console.error('Error handling view table approved request:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+
+}
+
+
 module.exports = {
     handleOpenDialogRequest, // Add new request
     handleAddRequest,
@@ -3766,9 +4339,9 @@ module.exports = {
     handleCancelDeleteRequest,
     handleOpenConfirmDeleteRequest,
     handleConfirmDeleteRequest,
-    handleSendListRequest,
+    handleSendListRequest,// Send list request
     handleCancelSendListRequest,
-    handleConfirmSendListRequest, // Send list request
+    handleConfirmSendListRequest,
     handleRequestToAdvice, // Request to advice
     handleOpenAdviceDialog,
     handleAdviceRequest,
@@ -3776,4 +4349,8 @@ module.exports = {
     handleSelectRequestToComment, // Comment request
     handleOpenCommentRequest,
     handleCommentRequest,
+    handleSumaryRequest, // Sumary request
+    handleViewTableApprovedRequest,
+    handleViewTableRejectedRequest,
+    handleViewTablePendingRequest
 };
