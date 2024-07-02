@@ -148,6 +148,23 @@ const addCommentRequest = async (req, res) => {
     }
 }
 
+const addAdviceRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { userId, isAdvice } = req.body;
+        const request = await Request.findById(id);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        request.advice.push({ userId, isAdvice });
+        await request.save();
+        res.json(request);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createRequest,
     getRequestById,
@@ -155,4 +172,5 @@ module.exports = {
     editRequest,
     deleteRequest,
     addCommentRequest,
+    addAdviceRequest,
 };
