@@ -290,7 +290,7 @@ const handleOpenDialogRequest = async (req, res) => {
                 'X-Requested-With': 'XMLHttpRequest',
             }
         })
-        res.status(200).send();
+        return res.status(200).send();
     } catch (error) {
         console.error('Error handling open dialog request:', error);
         return res.status(500).send('Internal Server Error');
@@ -4484,6 +4484,19 @@ const handleViewTableRejectedRequest = async (req, res) => {
                 attachments: [
                     {
                         text: table,
+                        actions: [
+                            {
+                                name: "Xuất file",
+                                type: "button",
+                                integration: {
+                                    url: `${NGROK_URL}/api/request-mattermost/send-rejected-report-link`,
+                                    context: {
+                                        action: "view"
+                                    }
+                                },
+                                style: "primary"
+                            }
+                        ]
                     }
                 ]
             }
@@ -4603,6 +4616,19 @@ const handleViewTablePendingRequest = async (req, res) => {
                 attachments: [
                     {
                         text: table,
+                        actions: [
+                            {
+                                name: "Xuất file",
+                                type: "button",
+                                integration: {
+                                    url: `${NGROK_URL}/api/request-mattermost/send-pending-report-link`,
+                                    context: {
+                                        action: "view"
+                                    }
+                                },
+                                style: "primary"
+                            }
+                        ]
                     }
                 ]
             }
@@ -4647,7 +4673,7 @@ const handleSendApproveLink = async (req, res) => {
         if (!user) {
             const messageData = {
                 channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị chờ xử lý`,
+                message: `Người dùng **${req.body.user_name}** không có quyền xuất file danh sách kiến nghị chấp thuận`,
             };
 
             await axios.post(MESSAGE_URL, messageData, {
@@ -4663,7 +4689,7 @@ const handleSendApproveLink = async (req, res) => {
         if (user && user.role !== 'nv') {
             const messageData = {
                 channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyên xem danh sách kiến nghị chờ xử lý`,
+                message: `Người dùng **${req.body.user_name}** không có quyên xem danh sách kiến nghị chấp thuận`,
             };
 
             await axios.post(MESSAGE_URL, messageData, {
@@ -4678,7 +4704,7 @@ const handleSendApproveLink = async (req, res) => {
 
         const messageData = {
             channel_id: channel_id,
-            message: `Link kiến nghị chờ xử lý: [Tải về](${NGROK_URL}/api/report)`,
+            message: `File danh sách kiến nghị chấp thuận: [Tải về](${NGROK_URL}/api/report/1)`,
         };
 
         await axios.post(MESSAGE_URL, messageData, {
@@ -4693,6 +4719,131 @@ const handleSendApproveLink = async (req, res) => {
     }
     catch (error) {
         console.error('Error handling send approve link:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+const handleSendRejectedLink = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xuất file danh sách kiến nghị loại bỏ`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị loại bỏ`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `File danh sách kiến nghị loại bỏ: [Tải về](${NGROK_URL}/api/report/2)`,
+        };
+
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${access}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.status(200).send();
+
+    }
+    catch (error) {
+        console.error('Error handling send rejected link:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+
+}
+
+const handleSendPendingLink = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xuất file danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `File danh sách kiến nghị chờ xử lý: [Tải về](${NGROK_URL}/api/report/3)`,
+        };
+
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${access}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.status(200).send();
+
+    }
+    catch (error) {
+        console.error('Error handling send pending link:', error);
         return res.status(500).send('Internal Server Error');
     }
 }
@@ -4725,5 +4876,7 @@ module.exports = {
     handleViewTableApprovedRequest,
     handleViewTableRejectedRequest,
     handleViewTablePendingRequest,
-    handleSendApproveLink  // Send approve link
+    handleSendApproveLink,  // Send approve link
+    handleSendRejectedLink,
+    handleSendPendingLink,
 };

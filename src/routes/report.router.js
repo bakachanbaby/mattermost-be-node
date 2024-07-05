@@ -4,7 +4,7 @@ const {
     handleExportExcel,
 } = require('../controllers/report.controller');
 
-router.get('/', handleExportExcel);
-router.post('/', handleExportExcel);
+router.get('/:id', handleExportExcel);
+router.post('/:id', handleExportExcel);
 
 module.exports = router;

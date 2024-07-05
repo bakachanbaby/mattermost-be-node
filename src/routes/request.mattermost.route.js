@@ -28,6 +28,8 @@ const {
     handleViewTablePendingRequest,
     handleViewTableRejectedRequest,
     handleSendApproveLink,
+    handleSendPendingLink,
+    handleSendRejectedLink,
 } = require('../controllers/request.mattermost.controller');
 
 router.post('/open-dialog-request', handleOpenDialogRequest);
@@ -61,5 +63,7 @@ router.post('/view-table-approved-request', handleViewTableApprovedRequest);
 router.post('/view-table-pending-request', handleViewTablePendingRequest);
 router.post('/view-table-rejected-request', handleViewTableRejectedRequest);
 router.post('/send-approved-report-link', handleSendApproveLink);
+router.post('/send-pending-report-link', handleSendPendingLink);
+router.post('/send-rejected-report-link', handleSendRejectedLink);
 
 module.exports = router;
