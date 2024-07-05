@@ -4352,6 +4352,19 @@ const handleViewTableApprovedRequest = async (req, res) => {
                 attachments: [
                     {
                         text: table,
+                        actions: [
+                            {
+                                name: "Xuất file",
+                                type: "button",
+                                integration: {
+                                    url: `${NGROK_URL}/api/request-mattermost/send-approved-report-link`,
+                                    context: {
+                                        action: "view"
+                                    }
+                                },
+                                style: "primary"
+                            }
+                        ]
                     }
                 ]
             }
@@ -4622,6 +4635,68 @@ const handleViewTablePendingRequest = async (req, res) => {
 
 }
 
+const handleSendApproveLink = async (req, res) => {
+    try {
+        const { channel_id, user_id } = req.body;
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        console.log(user);
+
+        if (!user) {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role !== 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyên xem danh sách kiến nghị chờ xử lý`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        const messageData = {
+            channel_id: channel_id,
+            message: `Link kiến nghị chờ xử lý: [Tải về](${NGROK_URL}/api/report)`,
+        };
+
+        await axios.post(MESSAGE_URL, messageData, {
+            headers: {
+                'Authorization': `Bearer ${access}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return res.status(200).send();
+
+    }
+    catch (error) {
+        console.error('Error handling send approve link:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
 
 module.exports = {
     handleOpenDialogRequest, // Add new request
@@ -4649,5 +4724,6 @@ module.exports = {
     handleSumaryRequest, // Sumary request
     handleViewTableApprovedRequest,
     handleViewTableRejectedRequest,
-    handleViewTablePendingRequest
+    handleViewTablePendingRequest,
+    handleSendApproveLink  // Send approve link
 };
