@@ -547,13 +547,6 @@ const handleViewTableRequest = async (req, res) => {
                 const table = tableTitle + tableHeader + tableRows.join('\n');
 
                 console.log(table);
-
-                const data = `| Left-Aligned  | Center Aligned  | Right Aligned |
-| :------------ |:---------------:| -----:|
-| Left column 1 | this text       |  $100 |
-| Left column 2 | is              |   $10 |
-| Left column 3 | centered        |    $1 |`
-
                 const messageData = {
                     channel_id: channel_id,
                     message: "Dưới đây là bảng thông tin kiến nghị:",
@@ -788,7 +781,7 @@ const handleViewTableRequest = async (req, res) => {
                                         name: 'Xin ý kiến',
                                         type: 'button',
                                         integration: {
-                                            url: `${NGROK_URL}/api/request-mattermost/open-request-to-advice`,
+                                            url: `${NGROK_URL}/api/request-mattermost/select-request-to-advice`,
                                             context: {
                                                 action: 'advice'
                                             }
@@ -3289,6 +3282,128 @@ const handleRequestToAdvice = async (req, res) => {
     }
 }
 
+const handleSelectRequestToAdvice = async (req, res) => {
+    try {
+        // Gửi thông báo message cho user trong đó có danh sách các kiến nghị có thể sửa
+        const { channel_id, user_id } = req.body;
+        console.log('request comment ', req.body);
+
+        const lstBot = await BotModel.find();
+        let access = channel_id === lstBot[0].channelIds[0] ? MATTERMOST_ACCESS : MATTERMOST_ACCESS_BOT_TP;
+
+        let lstRequest = await RequestModal.find();
+
+        lstRequest = lstRequest.filter((request) => request.status === REQUEST_STATUS.PENDING);
+
+        const lstData = lstRequest.map((request, index) => {
+            return {
+                text: request.code,
+                value: request._id
+            }
+        });
+
+        // Lấy ra người dùng có id là user_id
+        const user = await UserModel.findOne({ userId: req.body.user_id });
+        if (!user) {
+            // return res.status(404).send('User not found');
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name}** không có quyền xin ý kiến kiến nghị`,
+            };
+
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (user && user.role === 'nv') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xin ý kiến kiến nghị`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        if (req.body.user_name !== 'qlp-dannguyen-thanhpho') {
+            const messageData = {
+                channel_id: channel_id,
+                message: `Người dùng **${req.body.user_name || user.username}** chỉ được xin ý kiến kiến nghị được gửi`,
+            };
+
+            await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            return res.status(200).send();
+        }
+
+        try {
+            const messageData = {
+                channel_id: channel_id,
+                message: "",
+                props: {
+                    attachments: [
+                        {
+                            text: "### Chọn kiến nghị muốn xin ý kiến",
+
+                            actions: [
+                                {
+                                    "id": "actionoptions",
+                                    "name": "Vui lòng chọn kiến nghị",
+                                    "integration": {
+                                        "url": `${NGROK_URL}/api/request-mattermost/open-advice-dialog`,
+                                        "context": {
+                                            "action": "do_something"
+                                        }
+                                    },
+                                    "type": "select",
+                                    "options": lstData
+                                },
+                            ]
+
+                        }
+                    ]
+                }
+            };
+            const response = await axios.post(MESSAGE_URL, messageData, {
+                headers: {
+                    'Authorization': `Bearer ${access}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('Message sent:', response.data);
+            res.status(200).send();
+        } catch (error) {
+            console.error('Error sending message:', error);
+            res.status(500).send();
+        }
+
+        return res.status(200).send();
+    } catch (error) {
+        console.error('Error handling open delete request:', error);
+        return res.status(500).send('Internal Server Error');
+    }
+
+
+}
+
 const handleOpenAdviceDialog = async (req, res) => {
     try {
         const { post_id, user_name, trigger_id, channel_id } = req.body;
@@ -4162,21 +4277,42 @@ const handleSumaryRequest = async (req, res) => {
             return res.status(200).send();
         }
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
-            };
+        // Kiểm tra nếu đang gọi ở kênh khác thì không được xem 
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-            return res.status(200).send();
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
+
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
+
 
         let lstRequest = await RequestModal.find();
 
@@ -4289,21 +4425,38 @@ const handleViewTableApprovedRequest = async (req, res) => {
 
             return res.status(200).send();
         }
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị đã chấp thuận`,
-            };
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                return res.status(200).send();
+            }
 
-            return res.status(200).send();
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
 
         let lstRequest = await RequestModal.find();
@@ -4422,21 +4575,40 @@ const handleViewTableRejectedRequest = async (req, res) => {
             return res.status(200).send();
         }
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị đã loại bỏ`,
-            };
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            return res.status(200).send();
+                return res.status(200).send();
+            }
+
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
+
 
         let lstRequest = await RequestModal.find();
 
@@ -4554,20 +4726,38 @@ const handleViewTablePendingRequest = async (req, res) => {
             return res.status(200).send();
         }
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem danh sách kiến nghị chờ xử lý`,
-            };
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            return res.status(200).send();
+                return res.status(200).send();
+            }
+
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
 
         let lstRequest = await RequestModal.find();
@@ -4686,20 +4876,38 @@ const handleSendApproveLink = async (req, res) => {
             return res.status(200).send();
         }
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyên xem danh sách kiến nghị chấp thuận`,
-            };
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            return res.status(200).send();
+                return res.status(200).send();
+            }
+
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
 
         const messageData = {
@@ -4747,21 +4955,38 @@ const handleSendRejectedLink = async (req, res) => {
 
             return res.status(200).send();
         }
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị loại bỏ`,
-            };
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                return res.status(200).send();
+            }
 
-            return res.status(200).send();
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
 
         const messageData = {
@@ -4811,20 +5036,38 @@ const handleSendPendingLink = async (req, res) => {
             return res.status(200).send();
         }
 
-        if (user && user.role !== 'nv') {
-            const messageData = {
-                channel_id: channel_id,
-                message: `Người dùng **${req.body.user_name}** không có quyền xem danh sách kiến nghị chờ xử lý`,
-            };
+        if (channel_id !== lstBot[1].botChannelId) {
+            if (channel_id !== lstBot[1].channelIds[0]) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Kênh này không thể xem tổng hợp kiến nghị`,
+                };
 
-            await axios.post(MESSAGE_URL, messageData, {
-                headers: {
-                    'Authorization': `Bearer ${access}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            return res.status(200).send();
+                return res.status(200).send();
+            }
+
+            if (channel_id !== user.channelId) {
+                const messageData = {
+                    channel_id: channel_id,
+                    message: `Người dùng **${req.body.user_name || user.username}** không có quyền xem tổng hợp kiến nghị`,
+                };
+
+                await axios.post(MESSAGE_URL, messageData, {
+                    headers: {
+                        'Authorization': `Bearer ${access}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return res.status(200).send();
+            }
         }
 
         const messageData = {
@@ -4866,6 +5109,7 @@ module.exports = {
     handleCancelSendListRequest,
     handleConfirmSendListRequest,
     handleRequestToAdvice, // Request to advice
+    handleSelectRequestToAdvice,
     handleOpenAdviceDialog,
     handleAdviceRequest,
     handleApproveRequest, // Approve request

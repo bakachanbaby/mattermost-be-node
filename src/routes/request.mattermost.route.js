@@ -20,6 +20,7 @@ const {
     handleCancelSendListRequest,
     handleConfirmSendListRequest,
     handleRequestToAdvice,
+    handleSelectRequestToAdvice,
     handleOpenAdviceDialog,
     handleAdviceRequest,
     handleApproveRequest,
@@ -47,6 +48,7 @@ router.post('/cancel-delete-request', handleCancelDeleteRequest);
 router.post('/open-confirm-delete-request/:id', handleOpenConfirmDeleteRequest);
 router.post('/confirm-delete-request/:id', handleConfirmDeleteRequest);
 router.post('/open-request-to-advice', handleRequestToAdvice);
+router.post('/select-request-to-advice', handleSelectRequestToAdvice);
 router.post('/open-advice-dialog/:id', handleOpenAdviceDialog);
 router.post('/open-advice-dialog', handleOpenAdviceDialog);
 router.post('/advice-request/:id', handleAdviceRequest);

@@ -2,6 +2,27 @@ const Category = require('../models/category.modal');
 
 // Import the necessary modules and models
 
+const createZaloRequest = async (req, res) => {
+    try {
+        const req = {
+            "version": "chatbot",
+            "content": {
+                "messages": [
+                    {
+                        "type": "image",
+                        "image_url": "https://chatbot.oa.zalo.me/static/img/image.jpg",
+                        "caption": "caption image",
+                        "buttons": []
+                    }
+                ]
+            }
+        }
+        res.status(200).json(req);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 // Create a new category
 const createCategory = async (req, res) => {
     try {
@@ -74,4 +95,5 @@ module.exports = {
     getAllCategories,
     editCategory,
     deleteCategory,
+    createZaloRequest,
 };
